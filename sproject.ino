@@ -46,10 +46,10 @@ Wiring:
     #include "Wire.h"
 #endif
 
-    MPU6050 accelgyro;
+MPU6050 accelgyro;
 
-    int16_t ax, ay, az;
-    int16_t gx, gy, gz;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
 
 // uncomment "OUTPUT_READABLE_ACCELGYRO" if you want to see a tab-separated
 // list of the accel X/Y/Z and then gyro X/Y/Z values in decimal. Easy to read,
@@ -60,7 +60,7 @@ Wiring:
 // binary, one right after the other. This is very fast (as fast as possible
 // without compression or data loss), and easy to parse, but impossible to read
 // for a human.
-//#define OUTPUT_BINARY_ACCELGYRO
+// #define OUTPUT_BINARY_ACCELGYRO
 /* --- End MPU-6050 Config --- */
 
 
@@ -163,28 +163,43 @@ void setup()
 
 void loop()
 {   
-    read_imu();
-    print_imu_to_serial();
-    print_gps_to_serial();
-    // write_to_sd_card();
-    
+    // read imu
+    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+    // read gps
+    float flat, flon;
+    unsigned long age;
+    gps.f_get_position(&flat, &flon, &age);
+
+    // put data into a string
+    String dataString = "";
+    dataString += String(ax) + ",";
+    dataString += String(ay) + ",";
+    dataString += String(az) + ",";
+    dataString += String(gx) + ",";
+    dataString += String(gy) + ",";
+    dataString += String(gz) + ",";
+    dataString += String(flat) + ",";
+    dataString += String(flon);
+
+    // write to sd card
+    File dataFile = SD.open("data.log", FILE_WRITE);
+    if (dataFile) {
+        dataFile.println(dataString);
+        dataFile.close();
+    }
+    else
+    {
+        Serial.println("error opening data.log");
+    }  
+
+    // print to serial
+    Serial.println(dataString);
+
     // blink LED to indicate activity
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
     smartdelay(1000); 
-}
-
-/**
-*  Read MPU-6050 values
-*/
-static void read_imu()
-{
-    // read raw accel/gyro measurements from device
-    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    
-    // these methods (and a few others) are also available
-    //accelgyro.getAcceleration(&ax, &ay, &az);
-    //accelgyro.getRotation(&gx, &gy, &gz);
 }
 
 
@@ -261,14 +276,16 @@ static void write_to_sd_card()
     dataString += String(gy) + ", ";
     dataString += String(gz);
     
-    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    File dataFile = SD.open("data.log", FILE_WRITE);
     
     if (dataFile) {
-      dataFile.println(dataString);
-      dataFile.close();
-  } else {
-      Serial.println("error opening datalog.txt");
-  }  
+        dataFile.println(dataString);
+        dataFile.close();
+    }
+    else
+    {
+        Serial.println("error opening data.log");
+    }  
 }
 
 
