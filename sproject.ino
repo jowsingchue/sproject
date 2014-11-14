@@ -193,6 +193,7 @@ void loop()
         Serial.println("error opening data.log");
     }  
 
+    //
     // print to serial
     Serial.println(dataString);
 
