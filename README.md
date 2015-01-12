@@ -1,4 +1,4 @@
-<Project name> eg. rail-vehicle-sensor
+Project name (eg. rail-vehicle-sensor)
 ===================
 
 
@@ -12,6 +12,7 @@ Serial Port: /dev/tty.usbmodem1411
 * [SD Card](http://www.arduitronics.com/product/210/microsd-card-adapter-v1-1-catalex)
 * [MPU-6050](http://playground.arduino.cc/Main/MPU-6050)
 * [GY-GPS6MV2 (U-blox NEO 6M GPS)](https://developer.mbed.org/users/edodm85/notebook/gps-u-blox-neo-6m/)
+    + gps.baud = 9600
 
 
 ### Wiring
