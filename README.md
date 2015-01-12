@@ -2,11 +2,11 @@ Project name (eg. rail-vehicle-sensor)
 ===================
 
 
-### Note for myself
+## Note for myself
 Serial Port: /dev/tty.usbmodem1411
 
 
-### Equipments
+## Equipments
 
 * [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno)
 * [SD Card](http://www.arduitronics.com/product/210/microsd-card-adapter-v1-1-catalex)
@@ -15,7 +15,7 @@ Serial Port: /dev/tty.usbmodem1411
     + gps.baud = 9600
 
 
-### Wiring
+## Wiring
 
 #### MPU-6050
 * INT   -  pin 2 
