@@ -1,31 +1,42 @@
-/**
-Project: (Please Specify)
+/*
+# <Project name>
 
-Board: Arduino Uno
 
-Wiring:
-  // SD Card
-    * MISO  -  pin 12
-    * MOSI  -  pin 11
-    * CLK   -  pin 13
-    * CS    -  pin 4
-    * VCC   -  5V
-    * GND   -  GND
-   
-  // MPU-6050
-    * INT   -  pin 2 
-    * SDA   -  pin A4
-    * SCL   -  pin A5
-    * VCC   -  5V
-    * GND   -  GND
-    
-  // GY-GPS6MV2 (U-blox NEO 6M GPS)
-    * TX (to RX on Arduino) - pin 7
-    * RX (to TX on Arduino) - pin 6
-    * VCC   -  5V
-    * GND   -  GND
+## Note for myself
+Serial Port: /dev/tty.usbmodem1411
+
+
+## Equipments
+
+* [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno)
+* [SD Card](http://www.arduitronics.com/product/210/microsd-card-adapter-v1-1-catalex)
+* [MPU-6050](http://playground.arduino.cc/Main/MPU-6050)
+* [GY-GPS6MV2 (U-blox NEO 6M GPS)](https://developer.mbed.org/users/edodm85/notebook/gps-u-blox-neo-6m/)
+
+
+## Wiring
+
+MPU-6050
+    INT   -  pin 2 
+    SDA   -  pin A4
+    SCL   -  pin A5
+    VCC   -  5V
+    GND   -  GND
+
+GY-GPS6MV2 (U-blox NEO 6M GPS)
+    TX (to RX on Arduino) - pin 7
+    RX (to TX on Arduino) - pin 6
+    VCC   -  5V
+    GND   -  GND
+
+SD Card
+    MISO  -  pin 12
+    MOSI  -  pin 11
+    CLK   -  pin 13
+    CS    -  pin 4
+    VCC   -  5V
+    GND   -  GND
 */
-
 
 // MPU-6050
 #include "I2Cdev.h"
@@ -37,11 +48,11 @@ Wiring:
 #include <TinyGPS.h>
 
 
+/*****************************************************************************/
+// MPU-6050 Config
+/*****************************************************************************/
 
-
-/* ------------ MPU-6050 Config ------------ */
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
+// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
@@ -61,19 +72,27 @@ int16_t gx, gy, gz;
 // without compression or data loss), and easy to parse, but impossible to read
 // for a human.
 // #define OUTPUT_BINARY_ACCELGYRO
-/* --- End MPU-6050 Config --- */
+
+// End MPU-6050 Config
 
 
-/* ----------------- SD Card Config ------------------ */
+/*****************************************************************************/
+// SD Card Config
+/*****************************************************************************/
+
 // On the Ethernet Shield, CS is pin 4. Note that even if it's not
 // used as the CS pin, the hardware CS pin (10 on most Arduino boards,
 // 53 on the Mega) must be left as an output or the SD library
 // functions will not work.
 const int chipSelect = 4;
-/* --- End SD Card Config --- */
+
+// End SD Card Config
 
 
-/* ----------------- GPS Config ------------------ */
+/*****************************************************************************/
+// GPS Config
+/*****************************************************************************/
+
 TinyGPS gps;
 SoftwareSerial ss(4, 3); // TX, RX on GPS to (RX, TX) on Arduino
 static void smartdelay(unsigned long ms);
@@ -81,20 +100,20 @@ static void print_float(float val, float invalid, int len, int prec);
 static void print_int(unsigned long val, unsigned long invalid, int len);
 static void print_date(TinyGPS &gps);
 static void print_str(const char *str, int len);
-/* --- End GPS Config --- */
+
+// End GPS Config
 
 
 #define LED_PIN 13
 bool blinkState = false;
 
-
 void setup()
 {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    Wire.begin();
+        Wire.begin();
     #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-    Fastwire::setup(400, true);
+        Fastwire::setup(400, true);
     #endif
 
     // initialize serial communication
@@ -136,9 +155,6 @@ void setup()
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
     
-    
-    
-    
     Serial.print("Initializing SD card...");
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
@@ -165,41 +181,11 @@ void loop()
 {   
     // read imu
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+    print_imu_to_serial();
+    print_gps_to_serial();
+    write_to_sd_card();
+    delay(1000);
 
-    // read gps
-    float flat, flon;
-    unsigned long age;
-    gps.f_get_position(&flat, &flon, &age);
-
-    // put data into a string
-    String dataString = "";
-    dataString += String(ax) + ",";
-    dataString += String(ay) + ",";
-    dataString += String(az) + ",";
-    dataString += String(gx) + ",";
-    dataString += String(gy) + ",";
-    dataString += String(gz) + ",";
-    dataString += String(flat) + ",";
-    dataString += String(flon);
-
-    // write to sd card
-    File dataFile = SD.open("data.log", FILE_WRITE);
-    if (dataFile) {
-        dataFile.println(dataString);
-        dataFile.close();
-    }
-    else
-    {
-        Serial.println("error opening data.log");
-    }  
-
-    // print to serial
-    Serial.println(dataString);
-
-    // blink LED to indicate activity
-    blinkState = !blinkState;
-    digitalWrite(LED_PIN, blinkState);
-    smartdelay(1000); 
 }
 
 
@@ -211,22 +197,22 @@ static void print_imu_to_serial()
     // MPU-6050
     #ifdef OUTPUT_READABLE_ACCELGYRO
         // display tab-separated accel/gyro x/y/z values
-    Serial.print("a/g:\t");
-    Serial.print(ax); Serial.print("\t");
-    Serial.print(ay); Serial.print("\t");
-    Serial.print(az); Serial.print("\t");
-    Serial.print(gx); Serial.print("\t");
-    Serial.print(gy); Serial.print("\t");
-    Serial.println(gz);
+        Serial.print("a/g:\t");
+        Serial.print(ax); Serial.print("\t");
+        Serial.print(ay); Serial.print("\t");
+        Serial.print(az); Serial.print("\t");
+        Serial.print(gx); Serial.print("\t");
+        Serial.print(gy); Serial.print("\t");
+        Serial.println(gz);
     #endif
 
     #ifdef OUTPUT_BINARY_ACCELGYRO
-    Serial.write((uint8_t)(ax >> 8)); Serial.write((uint8_t)(ax & 0xFF));
-    Serial.write((uint8_t)(ay >> 8)); Serial.write((uint8_t)(ay & 0xFF));
-    Serial.write((uint8_t)(az >> 8)); Serial.write((uint8_t)(az & 0xFF));
-    Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
-    Serial.write((uint8_t)(gy >> 8)); Serial.write((uint8_t)(gy & 0xFF));
-    Serial.write((uint8_t)(gz >> 8)); Serial.write((uint8_t)(gz & 0xFF));
+        Serial.write((uint8_t)(ax >> 8)); Serial.write((uint8_t)(ax & 0xFF));
+        Serial.write((uint8_t)(ay >> 8)); Serial.write((uint8_t)(ay & 0xFF));
+        Serial.write((uint8_t)(az >> 8)); Serial.write((uint8_t)(az & 0xFF));
+        Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
+        Serial.write((uint8_t)(gy >> 8)); Serial.write((uint8_t)(gy & 0xFF));
+        Serial.write((uint8_t)(gz >> 8)); Serial.write((uint8_t)(gz & 0xFF));
     #endif
 }
 
