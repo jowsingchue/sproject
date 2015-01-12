@@ -16,23 +16,23 @@ Serial Port: /dev/tty.usbmodem1411
 
 ## Wiring
 
-MPU-6050
-    INT   -  pin 2 
-    SDA   -  pin A4
-    SCL   -  pin A5
-    VCC   -  5V
-    GND   -  GND
+#### MPU-6050
+* INT   -  pin 2 
+* SDA   -  pin A4
+* SCL   -  pin A5
+* VCC   -  5V
+* GND   -  GND
 
-GY-GPS6MV2 (U-blox NEO 6M GPS)
-    TX (to RX on Arduino) - pin 7
-    RX (to TX on Arduino) - pin 6
-    VCC   -  5V
-    GND   -  GND
+#### GY-GPS6MV2 (U-blox NEO 6M GPS)
+* TX (to RX on Arduino) - pin 7
+* RX (to TX on Arduino) - pin 6
+* VCC   -  5V
+* GND   -  GND
 
-SD Card
-    MISO  -  pin 12
-    MOSI  -  pin 11
-    CLK   -  pin 13
-    CS    -  pin 4
-    VCC   -  5V
-    GND   -  GND
+#### SD Card
+* MISO  -  pin 12
+* MOSI  -  pin 11
+* CLK   -  pin 13
+* CS    -  pin 4
+* VCC   -  5V
+* GND   -  GND
