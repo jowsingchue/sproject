@@ -2,11 +2,11 @@
 ===================
 
 
-## Note for myself
+### Note for myself
 Serial Port: /dev/tty.usbmodem1411
 
 
-## Equipments
+### Equipments
 
 * [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno)
 * [SD Card](http://www.arduitronics.com/product/210/microsd-card-adapter-v1-1-catalex)
@@ -14,7 +14,7 @@ Serial Port: /dev/tty.usbmodem1411
 * [GY-GPS6MV2 (U-blox NEO 6M GPS)](https://developer.mbed.org/users/edodm85/notebook/gps-u-blox-neo-6m/)
 
 
-## Wiring
+### Wiring
 
 #### MPU-6050
 * INT   -  pin 2 
