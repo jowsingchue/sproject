@@ -1,85 +1,65 @@
+// IMU ------------------------------------------------------------------------
 
-// MPU-6050
-#include "I2Cdev.h"
-#include "MPU6050.h"
-// SD card
-// GPS
-#include <SoftwareSerial.h>
-#include <TinyGPS.h>
-
-
-/*****************************************************************************/
-// MPU-6050 Config
-/*****************************************************************************/
-
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
+#include <I2Cdev.h>
+#include <MPU6050.h>
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-#include "Wire.h"
+#include <Wire.h>
 #endif
-
 MPU6050 accelgyro;
-
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
-
-// uncomment "OUTPUT_READABLE_ACCELGYRO" if you want to see a tab-separated
-// list of the accel X/Y/Z and then gyro X/Y/Z values in decimal. Easy to read,
-// not so easy to parse, and slow(er) over UART.
-#define OUTPUT_READABLE_ACCELGYRO
-
-// uncomment "OUTPUT_BINARY_ACCELGYRO" to send all 6 axes of data as 16-bit
-// binary, one right after the other. This is very fast (as fast as possible
-// without compression or data loss), and easy to parse, but impossible to read
-// for a human.
-// #define OUTPUT_BINARY_ACCELGYRO
-
-// End MPU-6050 Config
-
-
-/*****************************************************************************/
-// SD Card Config
-/*****************************************************************************/
-#include <SD.h>
-// On the Ethernet Shield, CS is pin 4. Note that even if it's not
-// used as the CS pin, the hardware CS pin (10 on most Arduino boards,
-// 53 on the Mega) must be left as an output or the SD library
-// functions will not work.
-const int chipSelect = 4;
-
-// End SD Card Config
-
-
-/*****************************************************************************/
-// GPS Config
-/*****************************************************************************/
-
-TinyGPS gps;
-SoftwareSerial ss(4, 3); // TX, RX on GPS to (RX, TX) on Arduino
-static void smartdelay(unsigned long ms);
-static void print_float(float val, float invalid, int len, int prec);
-static void print_int(unsigned long val, unsigned long invalid, int len);
-static void print_date(TinyGPS &gps);
-static void print_str(const char *str, int len);
-
-// End GPS Config
-
-
 #define LED_PIN 13
 bool blinkState = false;
 
+
+
+// GPS ------------------------------------------------------------------------
+
+#include <SoftwareSerial.h>
+#include <TinyGPS.h>
+TinyGPS gps;
+SoftwareSerial ss(7, 6);
+float flat, flon;
+unsigned long age;
+static void smartdelay(unsigned long ms);
+static void print_float(float val, float invalid, int len, int prec);
+
+
+
+// SD card --------------------------------------------------------------------
+
+#include <SD.h>
+const int chipSelect = 4;
+File root;
+static void printDirectory(File dir, int numTabs);
+
+
+
+/******************************************************************************
+*  Setup
+******************************************************************************/
 void setup()
 {
-    // join I2C bus (I2Cdev library doesn't do this automatically)
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    Wire.begin();
-#elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-    Fastwire::setup(400, true);
-#endif
-
-    // initialize serial communication
-    // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
-    // it's really up to you depending on your project)
+    
     Serial.begin(38400);
+    Serial.println();
+    Serial.println();
+
+    while (!Serial)
+    {
+        ; // wait for serial port to connect. Needed for Leonardo only
+    }
+    
+
+
+// IMU ------------------------------------------------------------------------
+
+    // join I2C bus (I2Cdev library doesn't do this automatically)
+    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    Wire.begin();
+    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+    Fastwire::setup(400, true);
+    #endif
 
     // initialize device
     Serial.println("Initializing I2C devices...");
@@ -88,45 +68,18 @@ void setup()
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-
-    // use the code below to change accel/gyro offset values
-    /*
-    Serial.println("Updating internal sensor offsets...");
-    // -76  -2359   1688    0   0   0
-    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
-    Serial.print("\n");
-    accelgyro.setXGyroOffset(220);
-    accelgyro.setYGyroOffset(76);
-    accelgyro.setZGyroOffset(-85);
-    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
-    Serial.print("\n");
-    */
-
-    // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
 
-    /*****************************************************************************/
-    // SD Card
-    /*****************************************************************************/
-    // Open serial communications and wait for port to open:
-    Serial.begin(38400);
-    while (!Serial)
-    {
-        ; // wait for serial port to connect. Needed for Leonardo only
-    }
+// GPS ------------------------------------------------------------------------
+    
+    Serial.println("Latitude, Longitude");
+    ss.begin(9600);
 
 
-    Serial.print("Initializing SD card...");
+
+// SD card --------------------------------------------------------------------
+
+    Serial.print("Initializing SD card... ");
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
     pinMode(10, OUTPUT);
@@ -140,165 +93,92 @@ void setup()
     }
     Serial.println("card initialized.");
 
-    // remove existing file
-    if (SD.exists("test.log"))
+    // use code below to list files in SD
+    Serial.println("Files in /data");
+    root = SD.open("/data");
+    printDirectory(root, 1);
+
+    if (SD.exists("data/test.log"))
     {
-        Serial.println("Remove test.log");
-        SD.remove("test.log");
+        SD.remove("data/test.log");
+        Serial.println("test.log has been removed");
+    }
+    else
+    {
+        Serial.println("test.log not found");
     }
 
+    Serial.println("--- Done initialization ---");
 
-    Serial.println();
-    Serial.println("The output will be in the format of:");
-    Serial.println("----------------------------------------------------");
-    Serial.println("{ax},{ay},{az},{gx},{gy},{gz},{latitude},{longitude}");
-    Serial.println("----------------------------------------------------");
 }
+
+
+
+/******************************************************************************
+*  Loop
+******************************************************************************/
 
 void loop()
 {
-    // read imu
-    // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    // print_imu_to_serial();
-    // print_gps_to_serial();
-    // write_to_sd_card(0);
-    data_logger();
 
-    Serial.println("...");
-    delay(600);
-}
+// IMU ------------------------------------------------------------------------
 
-static void data_logger()
-{
+    // read raw accel/gyro measurements from device
+    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+
+
+// GPS ------------------------------------------------------------------------
+
+    gps.f_get_position(&flat, &flon, &age);
+
+    // print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
+    // print_float(flon, TinyGPS::GPS_INVALID_F_ANGLE, 11, 6);
+    // Serial.println();
+
+
+// SD card --------------------------------------------------------------------
+    
     // make a string for assembling the data to log:
     String dataString = "";
+    dataString += String(flat) + ",";
+    dataString += String(flon) + ",";
+    dataString += String(ax) + ",";
+    dataString += String(ay) + ",";
+    dataString += String(az) + ",";
+    dataString += String(gx) + ",";
+    dataString += String(gy) + ",";
+    dataString += String(gz) + ",";
 
-    for (int i = 0; i < 3; i++)
-    {
-        dataString += String(i);
-        if (i < 2)
-        {
-            dataString += ",";
-        }
-    }
+    File dataFile = SD.open("data/test.log", FILE_WRITE);
 
-    // open the file. note that only one file can be open at a time,
-    // so you have to close this one before opening another.
-    File dataFile = SD.open("test.log", FILE_WRITE);
-
-    // if the file is available, write to it:
     if (dataFile)
     {
         dataFile.println(dataString);
         dataFile.close();
-        // print to the serial port too:
+        // print to Serial
         Serial.print("Data written: ");
         Serial.println(dataString);
     }
-    // if the file isn't open, pop up an error:
     else
     {
         Serial.println("error opening test.log");
     }
+
+    
+
+    // blink LED to indicate activity
+    blinkState = !blinkState;
+    digitalWrite(LED_PIN, blinkState);
+    smartdelay(1000);
 }
 
-/**
-*  Print IMU values to Serial
-*/
-static void print_imu_to_serial()
-{
-    // MPU-6050
-#ifdef OUTPUT_READABLE_ACCELGYRO
-    // display tab-separated accel/gyro x/y/z values
-    Serial.print("a/g:\t");
-    Serial.print(ax); Serial.print("\t");
-    Serial.print(ay); Serial.print("\t");
-    Serial.print(az); Serial.print("\t");
-    Serial.print(gx); Serial.print("\t");
-    Serial.print(gy); Serial.print("\t");
-    Serial.println(gz);
-#endif
+/******************************************************************************
+*  Function
+******************************************************************************/
 
-#ifdef OUTPUT_BINARY_ACCELGYRO
-    Serial.write((uint8_t)(ax >> 8)); Serial.write((uint8_t)(ax & 0xFF));
-    Serial.write((uint8_t)(ay >> 8)); Serial.write((uint8_t)(ay & 0xFF));
-    Serial.write((uint8_t)(az >> 8)); Serial.write((uint8_t)(az & 0xFF));
-    Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
-    Serial.write((uint8_t)(gy >> 8)); Serial.write((uint8_t)(gy & 0xFF));
-    Serial.write((uint8_t)(gz >> 8)); Serial.write((uint8_t)(gz & 0xFF));
-#endif
-}
+// GPS ------------------------------------------------------------------------
 
-/**
-*
-*/
-static void print_gps_to_serial()
-{
-    float flat, flon;
-    unsigned long age, date, time, chars = 0;
-    unsigned short sentences = 0, failed = 0;
-    static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
-
-    print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
-    print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
-    gps.f_get_position(&flat, &flon, &age);
-    print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
-    print_float(flon, TinyGPS::GPS_INVALID_F_ANGLE, 11, 6);
-    print_int(age, TinyGPS::GPS_INVALID_AGE, 5);
-    print_date(gps);
-    print_float(gps.f_altitude(), TinyGPS::GPS_INVALID_F_ALTITUDE, 7, 2);
-    print_float(gps.f_course(), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-    print_float(gps.f_speed_kmph(), TinyGPS::GPS_INVALID_F_SPEED, 6, 2);
-    print_str(gps.f_course() == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(gps.f_course()), 6);
-    print_int(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0xFFFFFFFF : (unsigned long)TinyGPS::distance_between(flat, flon, LONDON_LAT, LONDON_LON) / 1000, 0xFFFFFFFF, 9);
-    print_float(flat == TinyGPS::GPS_INVALID_F_ANGLE ? TinyGPS::GPS_INVALID_F_ANGLE : TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-    print_str(flat == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON)), 6);
-
-    gps.stats(&chars, &sentences, &failed);
-    print_int(chars, 0xFFFFFFFF, 6);
-    print_int(sentences, 0xFFFFFFFF, 10);
-    print_int(failed, 0xFFFFFFFF, 9);
-    Serial.println();
-}
-
-/**
-* Write string data into SD card
-*/
-static void write_to_sd_card(int flag)
-{
-    File dataFile;
-
-    if (flag == 0)
-    {
-        dataFile = SD.open("test.log", FILE_WRITE);
-    }
-    else
-    {
-        dataFile = SD.open("data.log", FILE_WRITE);
-    }
-
-    String dataString = "";
-    dataString += String(ax) + ", ";
-    dataString += String(ay) + ", ";
-    dataString += String(az) + ", ";
-    dataString += String(gx) + ", ";
-    dataString += String(gy) + ", ";
-    dataString += String(gz);
-
-    if (dataFile)
-    {
-        dataFile.println(dataString);
-        dataFile.close();
-    }
-    else
-    {
-        Serial.println("error opening data.log");
-    }
-}
-
-
-
-/* ================================================================== */
 static void smartdelay(unsigned long ms)
 {
     unsigned long start = millis();
@@ -330,46 +210,36 @@ static void print_float(float val, float invalid, int len, int prec)
     smartdelay(0);
 }
 
-static void print_int(unsigned long val, unsigned long invalid, int len)
-{
-    char sz[32];
-    if (val == invalid)
-        strcpy(sz, "*******");
-    else
-        sprintf(sz, "%ld", val);
 
-    sz[len] = 0;
-    for (int i = strlen(sz); i < len; ++i)
-        sz[i] = ' ';
-    if (len > 0)
-        sz[len - 1] = ' ';
-    Serial.print(sz);
-    smartdelay(0);
-}
+// SD card --------------------------------------------------------------------
 
-static void print_date(TinyGPS &gps)
+static void printDirectory(File dir, int numTabs)
 {
-    int year;
-    byte month, day, hour, minute, second, hundredths;
-    unsigned long age;
-    gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredths, &age);
-    if (age == TinyGPS::GPS_INVALID_AGE)
-        Serial.print("********** ******** ");
-    else
+    while (true)
     {
-        char sz[32];
-        sprintf(sz, "%02d/%02d/%02d %02d:%02d:%02d ",
-                month, day, year, hour, minute, second);
-        Serial.print(sz);
-    }
-    print_int(age, TinyGPS::GPS_INVALID_AGE, 5);
-    smartdelay(0);
-}
 
-static void print_str(const char *str, int len)
-{
-    int slen = strlen(str);
-    for (int i = 0; i < len; ++i)
-        Serial.print(i < slen ? str[i] : ' ');
-    smartdelay(0);
+        File entry =  dir.openNextFile();
+        if (! entry)
+        {
+            // no more files
+            break;
+        }
+        for (uint8_t i = 0; i < numTabs; i++)
+        {
+            Serial.print('\t');
+        }
+        Serial.print(entry.name());
+        if (entry.isDirectory())
+        {
+            Serial.println("/");
+            printDirectory(entry, numTabs + 1);
+        }
+        else
+        {
+            // files have sizes, directories do not
+            Serial.print("\t\t");
+            Serial.println(entry.size(), DEC);
+        }
+        entry.close();
+    }
 }

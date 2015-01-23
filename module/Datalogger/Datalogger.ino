@@ -3,6 +3,8 @@ const int chipSelect = 4;
 
 File root;
 
+void printDirectory(File dir, int numTabs);
+
 void setup()
 {
     // Open serial communications and wait for port to open:
