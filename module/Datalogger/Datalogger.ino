@@ -1,23 +1,20 @@
 #include <SD.h>
 const int chipSelect = 4;
-
-File root;
-
-void printDirectory(File dir, int numTabs);
+char dirName[12];
+char fileName[12];
+char fileLocation[30];
 
 void setup()
 {
     // Open serial communications and wait for port to open:
-    Serial.begin(38400);
-    Serial.println();
-    Serial.println();
-
+    Serial.begin(115200);
     while (!Serial)
     {
         ; // wait for serial port to connect. Needed for Leonardo only
     }
 
-    Serial.print("Initializing SD card... ");
+
+    Serial.print("Initializing SD card...");
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
     pinMode(10, OUTPUT);
@@ -31,82 +28,66 @@ void setup()
     }
     Serial.println("card initialized.");
 
-    // use code below to list files in SD
-    Serial.println("Files in /data");
-    root = SD.open("/data");
-    printDirectory(root, 1);
+    sprintf(dirName, "%04d%02d%02d",
+            2014, 02, 27
+           );
+    if(SD.exists(dirName))
+    {
+        Serial.print("dir_name: ");
+        Serial.print(dirName);
+        Serial.println(" already exists.");
+    } else {
+        SD.mkdir(dirName);
+        Serial.print("dir_name: ");
+        Serial.print(dirName);
+        Serial.println(" created.");
+    }
 
-    if (SD.exists("data/test.log"))
-    {
-        SD.remove("data/test.log");
-        Serial.println("test.log has been removed");
-    }
-    else
-    {
-        Serial.println("test.log not found");
-    }
-    Serial.println("--- Done initialization ---");
+    sprintf(fileName, "%02d%02d%02d.log",
+            15, 04, 48
+           );
+    Serial.print("File name is: ");
+    Serial.println(fileName);
+
+    strcpy(fileLocation, dirName);
+    strcat(fileLocation, "/");
+    strcat(fileLocation, fileName);
+
+    Serial.print("Data will be write to: ");
+    Serial.println(fileLocation);
 }
 
 void loop()
 {
-    // make a string for assembling the data to log:
-    String dataString = "";
 
-    for (int i = 0; i < 3; i++)
-    {
-        dataString += String(i);
-        if (i < 2)
-        {
-            dataString += ",";
-        }
-    }
+    String dataString = "2015-01-25,16:42:36,13.847307,100.569810,-9420,-8200,-10848,-237,191,138";
 
-    File dataFile = SD.open("data/test.log", FILE_WRITE);
+    File dataFile = SD.open(fileLocation, FILE_WRITE);
 
+    // if the file is available, write to it:
     if (dataFile)
     {
         dataFile.println(dataString);
         dataFile.close();
-        // print to Serial
+        // print to the serial port too:
         Serial.print("Data written: ");
         Serial.println(dataString);
     }
+    // if the file isn't open, pop up an error:
     else
     {
-        Serial.println("error opening test.log");
+        Serial.print("error opening ");
+        Serial.println(fileLocation);
     }
 
-    delay(1000);
+    delay(400);
 }
 
-void printDirectory(File dir, int numTabs)
-{
-    while (true)
-    {
 
-        File entry =  dir.openNextFile();
-        if (! entry)
-        {
-            // no more files
-            break;
-        }
-        for (uint8_t i = 0; i < numTabs; i++)
-        {
-            Serial.print('\t');
-        }
-        Serial.print(entry.name());
-        if (entry.isDirectory())
-        {
-            Serial.println("/");
-            printDirectory(entry, numTabs + 1);
-        }
-        else
-        {
-            // files have sizes, directories do not
-            Serial.print("\t\t");
-            Serial.println(entry.size(), DEC);
-        }
-        entry.close();
-    }
-}
+
+
+
+
+
+
+

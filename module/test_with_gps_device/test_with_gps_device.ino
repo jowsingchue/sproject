@@ -8,14 +8,13 @@ SoftwareSerial ss(7, 6);
 static void smartdelay(unsigned long ms);
 static void print_float(float val, float invalid, int len, int prec);
 
-
 void setup()
 {
-    Serial.begin(38400);
+    Serial.begin(115200);
 
     Serial.println();
     Serial.println();
-    Serial.println("Latitude, Longitude");
+    Serial.println("Date, Time, Latitude, Longitude");
     ss.begin(9600);
 }
 
@@ -25,6 +24,7 @@ void loop()
     unsigned long age;
 
     gps.f_get_position(&flat, &flon, &age);
+    
     print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
     print_float(flon, TinyGPS::GPS_INVALID_F_ANGLE, 11, 6);
 
