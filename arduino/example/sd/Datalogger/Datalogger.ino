@@ -28,6 +28,7 @@
 // functions will not work.
 const int chipSelect = 4;
 
+
 void setup()
 {
     // Open serial communications and wait for port to open:
@@ -41,7 +42,8 @@ void setup()
     Serial.print("Initializing SD card...");
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
-    pinMode(10, OUTPUT);
+      pinMode(10, OUTPUT);
+      digitalWrite(10, HIGH); // davekw7x: If it's low, the Wiznet chip corrupts the SPI bus
 
     // see if the card is present and can be initialized:
     if (!SD.begin(chipSelect))
@@ -59,6 +61,8 @@ void setup()
     } else {
         Serial.println("test.log not found");
     }
+
+    // -----
 }
 
 void loop()

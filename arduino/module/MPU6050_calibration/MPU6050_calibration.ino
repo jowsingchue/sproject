@@ -63,7 +63,7 @@ void setup()
     TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz). Leonardo measured 250kHz.
 
     // initialize serial communication
-    Serial.begin(38400);
+    Serial.begin(115200);
     Serial.println();
     Serial.println();
 
@@ -101,6 +101,7 @@ void loop()
 {
     if (state == 0)
     {
+        Serial.println("State 0");
         Serial.println("\nReading sensors for first time...");
         meansensors();
         state++;
@@ -109,6 +110,7 @@ void loop()
 
     if (state == 1)
     {
+        Serial.println("State 1");
         Serial.println("\nCalculating offsets...");
         calibration();
         state++;
@@ -117,6 +119,7 @@ void loop()
 
     if (state == 2)
     {
+        Serial.println("State 2");
         meansensors();
         Serial.println("\nFINISHED!");
         Serial.print("\nSensor readings with offsets:\t");

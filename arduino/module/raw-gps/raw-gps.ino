@@ -4,7 +4,7 @@
 
 /* This sample code demonstrates the normal use of a TinyGPS object.
    It requires the use of SoftwareSerial, and assumes that you have a
-   4800-baud serial GPS device hooked up on pins 4(rx) and 3(tx).
+   4800-baud serial GPS device hooked up on pins 7(rx) and 6(tx).
 */
 
 TinyGPS gps;
@@ -27,7 +27,7 @@ void setup()
   Serial.println("          (deg)     (deg)      Age                      Age  (m)    --- from GPS ----  ---- to London  ----  RX    RX        Fail");
   Serial.println("-------------------------------------------------------------------------------------------------------------------------------------");
 
-  ss.begin(9600);
+  ss.begin(4800);
 }
 
 void loop()

@@ -25,7 +25,7 @@ void setup()
     Fastwire::setup(400, true);
 #endif
 
-    Serial.begin(38400);
+    Serial.begin(115200);
     Serial.println();
     Serial.println();
 
@@ -72,6 +72,7 @@ void loop()
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
+
 #ifdef OUTPUT_READABLE_ACCELGYRO
     // display tab-separated accel/gyro x/y/z values
     Serial.print("a/g:\t");
@@ -96,5 +97,6 @@ void loop()
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
 
-    delay(1000);
+    delay(400);
+
 }
