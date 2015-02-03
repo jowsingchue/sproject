@@ -16,6 +16,12 @@ class Log(Base):
     timestamp = Column(DateTime, nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    ax = Column(Integer, nullable=True)
+    ay = Column(Integer, nullable=True)
+    az = Column(Integer, nullable=True)
+    gx = Column(Integer, nullable=True)
+    gy = Column(Integer, nullable=True)
+    gz = Column(Integer, nullable=True)
 
     # def __repr__(self):
     #     return 'timestamp = %s\nlatitude = %f, longitude = %f' \
@@ -55,10 +61,18 @@ def store():
         json.loads(request.POST.get('timestamp')), '%Y-%m-%dT%H:%M:%S.%f')
     flat = request.POST.get('latitude')
     flon = request.POST.get('longitude')
+    ax = request.POST.get('ax')
+    ay = request.POST.get('ay')
+    az = request.POST.get('az')
+    gx = request.POST.get('gx')
+    gy = request.POST.get('gy')
+    gz = request.POST.get('gz')
 
     # Insert a Person in the person table
-    new_log = Log(timestamp=t, latitude=flat, longitude=flon)
+    new_log = Log(timestamp=t, latitude=flat, longitude=flon,
+                  ax=ax, ay=ay, az=az, gx=gx, gy=gy, gz=gz)
     session.add(new_log)
+
     session.commit()
 
     return

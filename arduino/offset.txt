@@ -1,0 +1,25 @@
+
+Sensor readings with offsets:   -2  -2  16378   0   1   -1
+Your offsets:   -4783   -1120   1164    58  -40 -39
+
+Data is printed as: acelX acelY acelZ giroX giroY giroZ
+Check that your sensor readings are close to 0 0 16384 0 0 0
+If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)
+Calibration Finished!
+Close...
+
+# Arduino
+.setXAccelOffset(-4783);
+.setYAccelOffset(-1120);
+.setZAccelOffset(1164);
+.setXGyroOffset(58);
+.setYGyroOffset(-40);
+.setZGyroOffset(-39);
+
+# raspi
+.setXAccelOffset(-4701);
+.setYAccelOffset(-1143);
+.setZAccelOffset(1172);
+.setXGyroOffset(-23);
+.setYGyroOffset(9);
+.setZGyroOffset(-114);

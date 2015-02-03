@@ -1,0 +1,8 @@
+
+# arduino via serial
+imp raw arduino - 300Hz
+imu dmp arduino - 100Hz
+
+# raspi via both serial and direct monitor
+imp raw raspi - 200Hz
+imp dmp raspi - 20Hz

@@ -32,9 +32,18 @@
  */
 
 // I2Cdev and MPU6050 must be installed as libraries
-#include <I2Cdev.h>
-#include <MPU6050.h>
-#include <Wire.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include "I2Cdev.h"
+#include "MPU6050_6Axis_MotionApps20.h"
+#include "MPU6050.h"
+
+ void meansensors();
+ void calibration();
 
 ///////////////////////////////////   CONFIGURATION   /////////////////////////////
 //Change this 3 variables if you want to fine tune the skecth to your needs.
@@ -49,7 +58,8 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 //MPU6050 accelgyro;
 MPU6050 accelgyro(0x68); // <-- use for AD0 high
 
-int16_t ax, ay, az, gx, gy, gz;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
 
 int mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz, state = 0;
 int ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
@@ -57,36 +67,19 @@ int ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
 ///////////////////////////////////   SETUP   ////////////////////////////////////
 void setup()
 {
-    // join I2C bus (I2Cdev library doesn't do this automatically)
-    Wire.begin();
-    // COMMENT NEXT LINE IF YOU ARE USING ARDUINO DUE
-    TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz). Leonardo measured 250kHz.
-
-    // initialize serial communication
-    Serial.begin(115200);
-    Serial.println();
-    Serial.println();
 
     // initialize device
     accelgyro.initialize();
 
-    // wait for ready
-    while (Serial.available() && Serial.read()); // empty buffer
-    while (!Serial.available())
-    {
-        Serial.println(F("Send any character to start sketch.\n"));
-        delay(1500);
-    }
-    while (Serial.available() && Serial.read()); // empty buffer again
 
     // start message
-    Serial.println("\nMPU6050 Calibration Sketch");
-    delay(2000);
-    Serial.println("\nYour MPU6050 should be placed in horizontal position, with package letters facing up. \nDon't touch it until you see a finish message.\n");
-    delay(3000);
+    printf("\nMPU6050 Calibration Sketch");
+    usleep(2000000);
+    printf("\nYour MPU6050 should be placed in horizontal position, with package letters facing up. \nDon't touch it until you see a finish message.\n");
+    usleep(3000000);
     // verify connection
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-    delay(1000);
+    printf(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    usleep(100000);;
     // reset offsets
     accelgyro.setXAccelOffset(0);
     accelgyro.setYAccelOffset(0);
@@ -101,57 +94,51 @@ void loop()
 {
     if (state == 0)
     {
-        Serial.println("State 0");
-        Serial.println("\nReading sensors for first time...");
+        printf("\nReading sensors for first time...");
         meansensors();
         state++;
-        delay(1000);
+        usleep(100000);;
     }
 
     if (state == 1)
     {
-        Serial.println("State 1");
-        Serial.println("\nCalculating offsets...");
+        printf("\nCalculating offsets...");
         calibration();
         state++;
-        delay(1000);
+        usleep(100000);;
     }
 
     if (state == 2)
     {
-        Serial.println("State 2");
         meansensors();
-        Serial.println("\nFINISHED!");
-        Serial.print("\nSensor readings with offsets:\t");
-        Serial.print(mean_ax);
-        Serial.print("\t");
-        Serial.print(mean_ay);
-        Serial.print("\t");
-        Serial.print(mean_az);
-        Serial.print("\t");
-        Serial.print(mean_gx);
-        Serial.print("\t");
-        Serial.print(mean_gy);
-        Serial.print("\t");
-        Serial.println(mean_gz);
-        Serial.print("Your offsets:\t");
-        Serial.print(ax_offset);
-        Serial.print("\t");
-        Serial.print(ay_offset);
-        Serial.print("\t");
-        Serial.print(az_offset);
-        Serial.print("\t");
-        Serial.print(gx_offset);
-        Serial.print("\t");
-        Serial.print(gy_offset);
-        Serial.print("\t");
-        Serial.println(gz_offset);
-        Serial.println("\nData is printed as: acelX acelY acelZ giroX giroY giroZ");
-        Serial.println("Check that your sensor readings are close to 0 0 16384 0 0 0");
-        Serial.println("If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)");
-
-        Serial.println("Calibration Finished!");
-        Serial.println("Close...");
+        printf("\nFINISHED!");
+        printf("\nSensor readings with offsets:\t");
+        printf("%d", mean_ax);
+        printf("\t");
+        printf("%d", mean_ay);
+        printf("\t");
+        printf("%d", mean_az);
+        printf("\t");
+        printf("%d", mean_gx);
+        printf("\t");
+        printf("%d", mean_gy);
+        printf("\t");
+        printf("%d", mean_gz);
+        printf("Your offsets:\t");
+        printf("%d", ax_offset);
+        printf("\t");
+        printf("%d", ay_offset);
+        printf("\t");
+        printf("%d", az_offset);
+        printf("\t");
+        printf("%d", gx_offset);
+        printf("\t");
+        printf("%d", gy_offset);
+        printf("\t");
+        printf("%d", gz_offset);
+        printf("\nData is printed as: acelX acelY acelZ giroX giroY giroZ");
+        printf("Check that your sensor readings are close to 0 0 16384 0 0 0");
+        printf("If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)");
         while (1);
     }
 }
@@ -185,7 +172,7 @@ void meansensors()
             mean_gz = buff_gz / buffersize;
         }
         i++;
-        delay(2); //Needed so we don't get repeated measures
+        usleep(2000); //Needed so we don't get repeated measures
     }
 }
 
@@ -210,38 +197,36 @@ void calibration()
         accelgyro.setZGyroOffset(gz_offset);
 
         meansensors();
-        Serial.println("...");
+        printf("...");
 
-        if (abs(mean_ax) <= acel_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(mean_ax) <= acel_deadzone");
-        } else ax_offset = ax_offset - mean_ax / acel_deadzone;
+        if (abs(mean_ax) <= acel_deadzone) ready++;
+        else ax_offset = ax_offset - mean_ax / acel_deadzone;
 
-        if (abs(mean_ay) <= acel_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(mean_ay) <= acel_deadzone");
-        } else ay_offset = ay_offset - mean_ay / acel_deadzone;
+        if (abs(mean_ay) <= acel_deadzone) ready++;
+        else ay_offset = ay_offset - mean_ay / acel_deadzone;
 
-        if (abs(16384 - mean_az) <= acel_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(16384 - mean_az) <= acel_deadzone");
-        } else az_offset = az_offset + (16384 - mean_az) / acel_deadzone;
+        if (abs(16384 - mean_az) <= acel_deadzone) ready++;
+        else az_offset = az_offset + (16384 - mean_az) / acel_deadzone;
 
-        if (abs(mean_gx) <= giro_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(mean_gx) <= giro_deadzone");
-        } else gx_offset = gx_offset - mean_gx / (giro_deadzone + 1);
+        if (abs(mean_gx) <= giro_deadzone) ready++;
+        else gx_offset = gx_offset - mean_gx / (giro_deadzone + 1);
 
-        if (abs(mean_gy) <= giro_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(mean_gy) <= giro_deadzone");
-        } else gy_offset = gy_offset - mean_gy / (giro_deadzone + 1);
+        if (abs(mean_gy) <= giro_deadzone) ready++;
+        else gy_offset = gy_offset - mean_gy / (giro_deadzone + 1);
 
-        if (abs(mean_gz) <= giro_deadzone) {
-            ready++;
-            Serial.println("Calibration: abs(mean_gz) <= giro_deadzone");
-        } else gz_offset = gz_offset - mean_gz / (giro_deadzone + 1);
+        if (abs(mean_gz) <= giro_deadzone) ready++;
+        else gz_offset = gz_offset - mean_gz / (giro_deadzone + 1);
 
         if (ready == 6) break;
     }
+}
+
+int main()
+{
+    setup();
+    usleep(100000);
+    for (;;)
+        loop();
+
+    return 0;
 }

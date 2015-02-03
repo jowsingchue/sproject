@@ -141,7 +141,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
-
+int count=0;
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -198,12 +198,12 @@ void setup() {
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXAccelOffset(-4720);
-    mpu.setYAccelOffset(-1034);
-    mpu.setZAccelOffset(1152); // 1688 factory default for my test chip
-    mpu.setXGyroOffset(67);
-    mpu.setYGyroOffset(-47);
-    mpu.setZGyroOffset(-29);
+    mpu.setXAccelOffset(-4783);
+    mpu.setYAccelOffset(-1120);
+    mpu.setZAccelOffset(1164);
+    mpu.setXGyroOffset(58);
+    mpu.setYGyroOffset(-40);
+    mpu.setZGyroOffset(-39);
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
@@ -280,10 +280,13 @@ void loop() {
 
         // read a packet from FIFO
         mpu.getFIFOBytes(fifoBuffer, packetSize);
-        
+
         // track FIFO count here in case there is > 1 packet available
         // (this lets us immediately read more without waiting for an interrupt)
         fifoCount -= packetSize;
+
+        Serial.print(++count);
+        Serial.print(": ");
 
         #ifdef OUTPUT_READABLE_QUATERNION
             // display quaternion values in easy matrix form: w x y z
@@ -352,7 +355,7 @@ void loop() {
             Serial.print("\t");
             Serial.println(aaWorld.z);
         #endif
-    
+
         #ifdef OUTPUT_TEAPOT
             // display quaternion values in InvenSense Teapot demo format:
             teapotPacket[2] = fifoBuffer[0];
@@ -371,6 +374,6 @@ void loop() {
         blinkState = !blinkState;
         digitalWrite(LED_PIN, blinkState);
 
-        // delay(400);
+        // delay(100);
     }
 }

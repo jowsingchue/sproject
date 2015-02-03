@@ -3,24 +3,24 @@
 // Based on the I2Cdev library and previous work by Jeff Rowberg <jeff@rowberg.net>
 // Updates (of the library) should (hopefully) always be available at https://github.com/jrowberg/i2cdevlib
 
-// These offsets were meant to calibrate MPU6050's internal DMP, but can be also useful for reading sensors. 
-// The effect of temperature has not been taken into account so I can't promise that it will work if you 
+// These offsets were meant to calibrate MPU6050's internal DMP, but can be also useful for reading sensors.
+// The effect of temperature has not been taken into account so I can't promise that it will work if you
 // calibrate indoors and then use it outdoors. Best is to calibrate and use at the same room temperature.
 
 /* ==========  LICENSE  ==================================
  I2Cdev device library code is placed under the MIT license
  Copyright (c) 2011 Jeff Rowberg
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -72,7 +72,7 @@ void setup() {
   while (!Serial.available()){
     Serial.println(F("Send any character to start sketch.\n"));
     delay(1500);
-  }                
+  }
   while (Serial.available() && Serial.read()); // empty buffer again
 
   // start message
@@ -112,29 +112,29 @@ void loop() {
     meansensors();
     Serial.println("\nFINISHED!");
     Serial.print("\nSensor readings with offsets:\t");
-    Serial.print(mean_ax); 
+    Serial.print(mean_ax);
     Serial.print("\t");
-    Serial.print(mean_ay); 
+    Serial.print(mean_ay);
     Serial.print("\t");
-    Serial.print(mean_az); 
+    Serial.print(mean_az);
     Serial.print("\t");
-    Serial.print(mean_gx); 
+    Serial.print(mean_gx);
     Serial.print("\t");
-    Serial.print(mean_gy); 
+    Serial.print(mean_gy);
     Serial.print("\t");
     Serial.println(mean_gz);
     Serial.print("Your offsets:\t");
-    Serial.print(ax_offset); 
+    Serial.print(ax_offset);
     Serial.print("\t");
-    Serial.print(ay_offset); 
+    Serial.print(ay_offset);
     Serial.print("\t");
-    Serial.print(az_offset); 
+    Serial.print(az_offset);
     Serial.print("\t");
-    Serial.print(gx_offset); 
+    Serial.print(gx_offset);
     Serial.print("\t");
-    Serial.print(gy_offset); 
+    Serial.print(gy_offset);
     Serial.print("\t");
-    Serial.println(gz_offset); 
+    Serial.println(gz_offset);
     Serial.println("\nData is printed as: acelX acelY acelZ giroX giroY giroZ");
     Serial.println("Check that your sensor readings are close to 0 0 16384 0 0 0");
     Serial.println("If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)");
@@ -149,7 +149,7 @@ void meansensors(){
   while (i<(buffersize+101)){
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    
+
     if (i>100 && i<=(buffersize+100)){ //First 100 measures are discarded
       buff_ax=buff_ax+ax;
       buff_ay=buff_ay+ay;

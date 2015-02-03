@@ -1,0 +1,8 @@
+# sync source code
+rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject pi@192.168.1.146:/home/pi/Code
+
+# how to measure sampling rate
+write to file (sd card) for a specific period (say 5 second) and count lines
+
+# real-time streaming
+UDP Protocol

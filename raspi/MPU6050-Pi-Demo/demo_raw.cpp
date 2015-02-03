@@ -13,10 +13,23 @@ MPU6050 accelgyro;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
+int count=0;
+
 void setup() {
     // initialize device
     printf("Initializing I2C devices...\n");
     accelgyro.initialize();
+
+    accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
+    accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_2);
+
+    // accelgyro.setXAccelOffset(-4783);
+    accelgyro.setXAccelOffset(-4701);
+    accelgyro.setYAccelOffset(-1143);
+    accelgyro.setZAccelOffset(1172);
+    accelgyro.setXGyroOffset(-23);
+    accelgyro.setYGyroOffset(9);
+    accelgyro.setZGyroOffset(-114);
 
     // verify connection
     printf("Testing device connections...\n");
@@ -24,6 +37,9 @@ void setup() {
 }
 
 void loop() {
+
+    printf("%d: ", ++count);
+
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 

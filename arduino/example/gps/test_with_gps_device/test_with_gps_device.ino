@@ -19,7 +19,7 @@ static void print_str(const char *str, int len);
 void setup()
 {
   Serial.begin(115200);
-  
+
   Serial.print("Testing TinyGPS library v. "); Serial.println(TinyGPS::library_version());
   Serial.println("by Mikal Hart");
   Serial.println();
@@ -36,7 +36,7 @@ void loop()
   unsigned long age, date, time, chars = 0;
   unsigned short sentences = 0, failed = 0;
   static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
-  
+
   print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
   print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
   gps.f_get_position(&flat, &flon, &age);
@@ -57,14 +57,14 @@ void loop()
   print_int(sentences, 0xFFFFFFFF, 10);
   print_int(failed, 0xFFFFFFFF, 9);
   Serial.println();
-  
+
   smartdelay(1000);
 }
 
 static void smartdelay(unsigned long ms)
 {
   unsigned long start = millis();
-  do 
+  do
   {
     while (ss.available())
       gps.encode(ss.read());
@@ -101,7 +101,7 @@ static void print_int(unsigned long val, unsigned long invalid, int len)
   sz[len] = 0;
   for (int i=strlen(sz); i<len; ++i)
     sz[i] = ' ';
-  if (len > 0) 
+  if (len > 0)
     sz[len-1] = ' ';
   Serial.print(sz);
   smartdelay(0);

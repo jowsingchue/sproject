@@ -21,7 +21,7 @@ Serial Port: /dev/tty.usbmodem1411
 * INT   -  pin 2 
 * SDA   -  pin A4
 * SCL   -  pin A5
-* VCC   -  5V
+* VCC   -  3.3V
 * GND   -  GND
 
 #### GY-GPS6MV2 (U-blox NEO 6M GPS)

@@ -16,6 +16,8 @@ int16_t gx, gy, gz;
 #define LED_PIN 13
 bool blinkState = false;
 
+int count=0;
+
 void setup()
 {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -38,30 +40,29 @@ void setup()
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     // use the code below to change accel/gyro offset values
-    /*
-        Serial.println("Updating internal sensor offsets...");
-        // -76  -2359   1688    0   0   0
-        Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-        Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-        Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-        Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-        Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-        Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
-        Serial.print("\n");
-        accelgyro.setXAccelOffset(0);
-        accelgyro.setYAccelOffset(0);
-        accelgyro.setZAccelOffset(0);
-        accelgyro.setXGyroOffset(0);
-        accelgyro.setYGyroOffset(0);
-        accelgyro.setZGyroOffset(0);
-        Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-        Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-        Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-        Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-        Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-        Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
-        Serial.print("\n");
-    */
+    Serial.println("Updating internal sensor offsets...");
+    // -76  -2359   1688    0   0   0
+    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
+    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
+    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
+    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
+    Serial.print("\n");
+    accelgyro.setXAccelOffset(-4783);
+    accelgyro.setYAccelOffset(-1120);
+    accelgyro.setZAccelOffset(1164);
+    accelgyro.setXGyroOffset(58);
+    accelgyro.setYGyroOffset(-40);
+    accelgyro.setZGyroOffset(-39);
+    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
+    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
+    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
+    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
+    Serial.print("\n");
+
 
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
@@ -69,6 +70,10 @@ void setup()
 
 void loop()
 {
+
+    Serial.print(++count);
+    Serial.print(": ");
+
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
@@ -97,6 +102,6 @@ void loop()
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
 
-    delay(400);
+    // delay(200);
 
 }
