@@ -11,7 +11,7 @@ TinyGPS gps;
 float flat, flon;
 unsigned long age;
 int Year;
-byte Month, Day, Hour, Minute, Second;
+byte Month, Day, Hour, Minute, Second, Hundredths;
 
 // IMU -----------------
 #include <I2Cdev.h>
@@ -37,6 +37,15 @@ void setup()
 {
     Serial.begin(115200);
     while (!Serial) ; // Needed for Leonardo only
+
+    accelgyro.initialize();
+    accelgyro.setXAccelOffset(-4783);
+    accelgyro.setYAccelOffset(-1120);
+    accelgyro.setZAccelOffset(1164);
+    accelgyro.setXGyroOffset(58);
+    accelgyro.setYGyroOffset(-40);
+    accelgyro.setZGyroOffset(-39);
+
     SerialGPS.begin(9600);
     Serial.println("Waiting for GPS time ... ");
 }
@@ -50,7 +59,7 @@ void loop()
             // when TinyGPS reports new data...
 
             // read datetime
-            gps.crack_datetime(&Year, &Month, &Day, &Hour, &Minute, &Second, NULL, &age);
+            gps.crack_datetime(&Year, &Month, &Day, &Hour, &Minute, &Second, &Hundredths, &age);
             // read position
             gps.f_get_position(&flat, &flon, &age);
             // read imu
@@ -71,8 +80,9 @@ void loop()
             prevDisplay = now();
 
             // datetime
+            // %Y-%m-%dT%H:%M:%S.%f
             char date_time[100];
-            sprintf(date_time, "%02d-%02d-%02d,%02d:%02d:%02d,",
+            sprintf(date_time, "%02d-%02d-%02dT%02d:%02d:%02d,",
                     year(), month(), day(),
                     hour(), minute(), second()
                    );
@@ -101,7 +111,7 @@ void loop()
             dataString += imu_string;
             Serial.println(dataString);
 
-            Serial.println("--- end loop ---");
+            // Serial.println("--- end loop ---");
         }
     }
 }

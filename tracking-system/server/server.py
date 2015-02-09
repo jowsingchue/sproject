@@ -3,7 +3,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import DeclarativeMeta
 import datetime
+import bson.json_util
 import json
 
 
@@ -26,6 +28,28 @@ class Log(Base):
     # def __repr__(self):
     #     return 'timestamp = %s\nlatitude = %f, longitude = %f' \
     #         % (self.timestamp, self.latitude, self.longitude)
+
+
+class AlchemyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj.__class__, DeclarativeMeta):
+            # an SQLAlchemy class
+            fields = {}
+            for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                data = obj.__getattribute__(field)
+                try:
+                    data = json.dumps(data) # this will fail on non-encodable values, like other classes
+                    fields[field] = data
+                except TypeError:
+                    try:
+                        data = json.dumps(data, default=bson.json_util.default)
+                        fields[field] = data
+                    except:
+                        fields[field] = None
+            # a json-encodable dict
+            return fields
+
+        return json.JSONEncoder.default(self, obj)
 
 # Create an engine that stores data in the local directory's
 engine = create_engine('sqlite:///logs.db')
@@ -52,13 +76,15 @@ app = Bottle()
 
 @app.get('/log')
 def show():
-    return "Hello World!!!!"
+    obj = session.query(Log).order_by(Log.id.desc()).first()
+    result = json.dumps(obj, cls=AlchemyEncoder)
+    return result
 
 
 @app.post('/log')
 def store():
     t = datetime.datetime.strptime(
-        json.loads(request.POST.get('timestamp')), '%Y-%m-%dT%H:%M:%S.%f')
+        json.loads(request.POST.get('timestamp')), '%Y-%m-%dT%H:%M:%S')
     flat = request.POST.get('latitude')
     flon = request.POST.get('longitude')
     ax = request.POST.get('ax')
@@ -75,7 +101,7 @@ def store():
 
     session.commit()
 
-    return
+    # return
     # return request.body
 
 
