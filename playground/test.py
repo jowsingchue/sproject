@@ -1,2 +1,4 @@
-x = "15.224"
-y = float(x)
+if ([]):
+    print(1)
+else:
+    print(2)

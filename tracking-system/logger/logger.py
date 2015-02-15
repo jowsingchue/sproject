@@ -1,34 +1,49 @@
 import requests
 import json
 import serial
-import time
 
 
 ser = serial.Serial('/dev/ttyACM0', 115200)
+# ser = serial.Serial('/dev/tty.usbmodem1421', 115200)
+
+payload = []
+
+# wait for the first valid data
+while True:
+    raw_data = ser.readline()
+    if(raw_data[0:2] == '++'):
+        payload = []
+        raw = raw_data[2:].strip().split(',')
+        payload = [
+            raw[0],
+            '%.6f' % float(raw[1]),
+            '%.6f' % float(raw[2])]
+        break;
+
 
 while True:
     raw_data = ser.readline()
-    if(raw_data[0:1] == '--'):
-        print(raw_data)
-    else:
+    if(raw_data[0:2] != '++'):
         raw = raw_data.strip().split(',')
         try:
-            url = 'http://192.168.1.131:8080/log'
-            payload = {
-                'timestamp': json.dumps(raw[0]),
-                'latitude': json.dumps(float(raw[1])),
-                'longitude': json.dumps(float(raw[2])),
-                'ax': json.dumps(int(raw[3])),
-                'ay': json.dumps(int(raw[4])),
-                'az': json.dumps(int(raw[5])),
-                'gx': json.dumps(int(raw[6])),
-                'gy': json.dumps(int(raw[7])),
-                'gz': json.dumps(int(raw[8]))
-            }
-            headers = {'content-type': 'application/json'}
-            r = requests.post(url, data=payload, headers=headers)
-            print("%s,%s,%s,%s,%s,%s -- %d"
-                  % (raw[0], raw[1], raw[2], raw[3], raw[4], raw[5], r.status_code))
+            if (raw[5]):
+                payload.append(raw)
         except:
-            print("-- Failed")
-    time.sleep(1)
+            pass
+    else:
+        try:
+            url = 'http://192.168.1.122:8080/log'
+            headers = {'content-type': 'application/json'}
+            r = requests.post(url, data=json.dumps(payload), headers=headers)
+            print(r.status_code)
+        except:
+            print("Failed")
+
+        payload = []
+        raw = raw_data[2:].strip().split(',')
+        payload = [
+            raw[0],
+            '%.6f' % float(raw[1]),
+            '%.6f' % float(raw[2])]
+
+#     # time.sleep(1)
