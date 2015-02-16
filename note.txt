@@ -10,3 +10,6 @@ UDP Protocol
 # kill background process
 pgrep python
 kill ####
+
+# check what are using port 80
+lsof -i :80

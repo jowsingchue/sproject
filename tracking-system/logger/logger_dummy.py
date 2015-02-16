@@ -27,9 +27,14 @@ while True:
                 random.randint(-16000, 16000)]
             payload.append(imu)
         payload = json.dumps(payload)
-
+        print(payload)
         # send
-        url = 'http://192.168.1.122:8080/log'
+        url = 'http://192.168.1.122:80/log'
+        # url = 'http://10.2.38.115:8080/log'
+        # url = 'http://49.230.175.246:80/log'
+        # url = 'http://49.230.64.186:80/log'
+        # url = 'http://158.108.208.123:80/log'
+        # url = 'http://158.108.208.123:80/log'
         headers = {'content-type': 'application/json'}
         r = requests.post(url, data=payload, headers=headers)
 
