@@ -18,7 +18,7 @@ while True:
             raw[0],
             '%.6f' % float(raw[1]),
             '%.6f' % float(raw[2])]
-        break;
+        break
 
 
 while True:

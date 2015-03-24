@@ -66,7 +66,7 @@ class AlchemyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 # Create an engine that stores data in the local directory's
-engine = create_engine('sqlite:///logs.db')
+engine = create_engine('sqlite:///log/logs.db')
 
 # Create all tables in the engine. This is equivalent to "Create Table"
 # statements in raw SQL.
@@ -88,6 +88,11 @@ session = DBSession()
 app = Bottle()
 
 
+@app.get('/hello')
+def hello():
+    return "<h1>Hello World!</h1>"
+
+
 @app.get('/log')
 def show():
     obj = session.query(Log).order_by(Log.id.desc()).first()
@@ -99,7 +104,8 @@ def show():
 def store():
     post_data = request.json
     new_log = Log(
-        timestamp=datetime.datetime.strptime(post_data[0], '%Y-%m-%dT%H:%M:%S'),
+        timestamp=datetime.datetime.strptime(post_data[0],
+                                             '%Y-%m-%dT%H:%M:%S'),
         latitude=post_data[1],
         longitude=post_data[2])
     new_log.imu = []
@@ -108,7 +114,6 @@ def store():
             ax=e[0], ay=e[1], az=e[2], gx=e[3], gy=e[4], gz=e[5]))
     session.add(new_log)
     session.commit()
-
 
 
 run(app, host='0.0.0.0', port=8080, debug=True, reloader=True)

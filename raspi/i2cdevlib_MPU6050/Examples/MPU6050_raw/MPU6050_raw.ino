@@ -80,7 +80,7 @@ void setup() {
     // initialize serial communication
     // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
     // it's really up to you depending on your project)
-    Serial.begin(115200);
+    Serial.begin(38400);
 
     // initialize device
     Serial.println("Initializing I2C devices...");
@@ -93,7 +93,7 @@ void setup() {
     // use the code below to change accel/gyro offset values
     /*
     Serial.println("Updating internal sensor offsets...");
-    // -76  -2359   1688    0   0   0
+    // -76	-2359	1688	0	0	0
     Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
     Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
     Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
@@ -115,11 +115,6 @@ void setup() {
 
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
-
-    Serial.println( accelgyro.getDHPFMode() );
-    accelgyro.setDHPFMode( MPU6050_DHPF_HOLD );
-    Serial.println( accelgyro.getDHPFMode() );
-
 }
 
 void loop() {
@@ -153,5 +148,4 @@ void loop() {
     // blink LED to indicate activity
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
-
 }

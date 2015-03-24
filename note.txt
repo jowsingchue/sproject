@@ -1,5 +1,14 @@
-# sync source code
-rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject pi@192.168.1.150:/home/pi/Code
+# sync source code to Raspi
+rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject pi@192.168.1.152:/home/pi/code
+
+
+# sync to AMR server
+rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject/tracking-system/server/. root@183.90.171.55:~/code/btsdemo-server/app
+
+# sync log file from AMR server
+rsync -vrtzh --delete root@183.90.171.55:~/code/btsdemo-server/app/log /Users/jowsingchue/Data/working/code/sproject/tracking-system/server
+rsync -chavzP --stats root@183.90.171.55:~/code/btsdemo-server/app/log /Users/jowsingchue/Data/working/code/sproject/tracking-system/server
+
 
 # how to measure sampling rate
 write to file (sd card) for a specific period (say 5 second) and count lines
@@ -13,3 +22,8 @@ kill ####
 
 # check what are using port 80
 lsof -i :80
+
+
+
+# run script in Raspi
+sudo python ~/Code/sproject/raspi/python/PyComms/MPU6050/Examples/6axis_dmp.py
