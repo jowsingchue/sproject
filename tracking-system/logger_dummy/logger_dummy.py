@@ -16,7 +16,9 @@ while True:
         timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
         latitude = round(random.uniform(1.5, 1.9), 5)
         longitude = round(random.uniform(1.5, 1.9), 5)
+
         payload = [timestamp, latitude, longitude]
+
         for i in range(0, 5):
             imu = [
                 random.randint(-16000, 16000),

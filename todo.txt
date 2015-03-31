@@ -1,0 +1,6 @@
+Finish:
+	- send raw data to server
+	- server receive data and log into database
+
+Todo:
+	- Post processing on server side
