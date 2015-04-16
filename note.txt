@@ -3,7 +3,7 @@ rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject pi@192.168.1
 
 
 # sync to AMR server
-rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject/tracking-system/server/. root@183.90.171.55:~/code/btsdemo-server/app
+rsync -vrtzh --delete /Users/jowsingchue/Data/working/code/sproject/tracking-system/server/flask/. root@183.90.171.55:~/code/btsdemo-server/app
 
 # sync log file from AMR server
 rsync -vrtzh --delete root@183.90.171.55:~/code/btsdemo-server/app/log /Users/jowsingchue/Data/working/code/sproject/tracking-system/server
