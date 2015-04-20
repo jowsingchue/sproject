@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, Column, Integer, DateTime, Float, ForeignK
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
-import bson.json_util
+#import bson.json_util
 
 
 ###############################################################################
@@ -38,7 +38,7 @@ class Imu(Base):
 	__tablename__ = 'imu'
 
 	id = Column(Integer, primary_key=True)
-	log_id = Column(Integer, ForeignKey('logs.id')
+	log_id = Column( Integer, ForeignKey('logs.id') )
 	ax = Column(Integer, nullable=True)
 	ay = Column(Integer, nullable=True)
 	az = Column(Integer, nullable=True)
@@ -121,7 +121,7 @@ def store():
 
 @app.route( '/log', methods = [ 'GET' ] )
 def getLog():
-	obj = session.query(Imu).order_by(Imu.id.desc()).limit(100).all()
+	obj = session.query(Imu).order_by(Imu.id.desc()).limit(100000).all()
 	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
 	resultDictList = ast.literal_eval( resultDictListStr )
 	return resultDictListStr
@@ -178,5 +178,5 @@ def index():
 	return render_template( 'index.html', latitude=latitude, longitude=longitude )
 
 if __name__ == '__main__':
-	app.run( host='0.0.0.0', port=8080 )
-	# app.run( debug=True )
+	# app.run( host='0.0.0.0', port=8080 )
+	app.run( debug=True )
