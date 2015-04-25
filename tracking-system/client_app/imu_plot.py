@@ -8,7 +8,7 @@ import requests
 from matplotlib import pyplot as plt
 
 #   GLOBAL
-DisplayMode = 1
+DisplayMode = 3
 READ_FS_SEL = 0
 
 G = 1
@@ -68,10 +68,10 @@ def main():
         raw_gz = int( dataDict[ 'gz' ] ) - OFFSET[5]
         delta_t = float( dataDict[ 'dt' ] )
 
-        if fabs( raw_gx ) > 200:
-            continue
-        if fabs( raw_ax ) > 150:
-            continue
+#        if fabs( raw_gx ) > 200:
+#            continue
+#        if fabs( raw_ax ) > 150:
+#            continue
 
         ax_scaled = raw_ax / FSAccel
         ay_scaled = raw_ay / FSAccel

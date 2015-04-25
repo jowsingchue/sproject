@@ -23,15 +23,16 @@ class Log( Base ):
 	__tablename__ = 'logs'
 
 	id = Column(Integer, primary_key=True)
+	server_timestamp = Column(DateTime, nullable=True)
 	device_id = Column(Integer)
-	timestamp = Column(DateTime, nullable=True)
+	device_timestamp = Column(DateTime, nullable=True)
 	latitude = Column(Float, nullable=True)
 	longitude = Column(Float, nullable=True)
 
 	imu = relationship('Imu')
 
 	def __repr__(self):
-		return 'timestamp = {}, latitude = {}, longitude = {}'.format( self.timestamp, self.latitude, self.longitude )
+		return 'timestamp = {}, latitude = {}, longitude = {}'.format( self.device_timestamp, self.latitude, self.longitude )
 
 
 class Imu(Base):
@@ -107,11 +108,13 @@ app = Flask(__name__)
 def store():
 	post_data = request.json
 	new_log = Log(
+		server_timestamp=datetime.datetime.now(),
 		device_id=post_data[0],
-		timestamp=datetime.datetime.strptime(post_data[1],
-											 '%Y-%m-%dT%H:%M:%S'),
-		latitude=post_data[2],
-		longitude=post_data[3])
+		device_timestamp=datetime.datetime.strptime(post_data[1],
+											 '%Y-%m-%dT%H:%M:%S') or False,
+		latitude=post_data[2] or False,
+		longitude=post_data[3] or False
+	)
 	new_log.imu = []
 	for e in post_data[4]:
 		new_log.imu.append(Imu(
