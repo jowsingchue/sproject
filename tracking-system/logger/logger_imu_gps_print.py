@@ -1,6 +1,5 @@
 from multiprocessing import Process, Queue
 import pprint
-import requests
 import json
 import time
 import random
