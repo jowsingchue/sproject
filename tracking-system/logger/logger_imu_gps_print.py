@@ -132,9 +132,13 @@ if __name__ == '__main__':
 				latitude = report.lat
 			if hasattr(report, 'lon'):
 				longitude = report.lon
-			#	hack timestamp,
-			#	from '2015-03-30T16:09:29.000Z' to '2015-03-30T16:09:29'
-			gps_data.put( [ device_id, timestamp[0:19], latitude, longitude ] )
+		else:
+			timestamp = '2015-03-30T16:09:29.000Z'
+			latitude = 100.232323
+			longitude = 13.545454
+		#	hack timestamp,
+		#	from '2015-03-30T16:09:29.000Z' to '2015-03-30T16:09:29'
+		gps_data.put( [ device_id, timestamp[0:19], latitude, longitude ] )
 
 			break
 
