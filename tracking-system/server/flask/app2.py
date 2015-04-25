@@ -77,6 +77,7 @@ class AlchemyEncoder(json.JSONEncoder):
 
 # Create an engine that stores data in the local directory's
 engine = create_engine('sqlite:///database/logs.db')
+#engine = create_engine('sqlite:///database/logs_ext.db')
 
 # Create all tables in the engine. This is equivalent to 'Create Table'
 # statements in raw SQL.

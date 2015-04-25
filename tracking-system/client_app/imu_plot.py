@@ -1,23 +1,25 @@
 #   standard modules
 import json
 from pprint import pprint
-from math import atan, sqrt
+from math import atan, sqrt, fabs
 
 #   external modules
 import requests
 from matplotlib import pyplot as plt
 
 #   GLOBAL
+DisplayMode = 1
 READ_FS_SEL = 0
 
 G = 1
 ALPHA = 0.1
-CompCoef = 0.99
+CompCoef = 0.999
 FSAccel = 16384.0
 FSGyro = 131.0/(READ_FS_SEL + 1)
 
 # sensor offset: ax, ay, az, gx, gy, gz
-OFFSET = [750, -28, -258, -256, 252, 139]
+#OFFSET = [750, -28, -258, -256, 252, 139]
+OFFSET = [ 0, 0, 0, 12, -75, 0 ]
 
 
 def main():
@@ -45,16 +47,12 @@ def main():
     raw_gy = int( sortedByIdDictList[0][ 'gy' ] ) - OFFSET[4]
     raw_gz = int( sortedByIdDictList[0][ 'gz' ] ) - OFFSET[5]
 
-    ax = raw_ax
-    ay = raw_ay
-    az = raw_az
-
     ax_scaled = raw_ax / FSAccel
     ay_scaled = raw_ay / FSAccel
     az_scaled = raw_az / FSAccel
 
-    roll_filtered = atan( ay_scaled / sqrt( ax_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
-    pitch_filtered = atan( ax_scaled / sqrt( ay_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
+    roll_comp_filtered = atan( ay_scaled / sqrt( ax_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
+    pitch_comp_filtered = atan( ax_scaled / sqrt( ay_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
 
     velocity = 0
     distance = 0
@@ -67,16 +65,17 @@ def main():
         raw_az = int( dataDict[ 'az' ] ) - OFFSET[2]
         raw_gx = int( dataDict[ 'gx' ] ) - OFFSET[3]
         raw_gy = int( dataDict[ 'gy' ] ) - OFFSET[4]
+        raw_gz = int( dataDict[ 'gz' ] ) - OFFSET[5]
         delta_t = float( dataDict[ 'dt' ] )
 
-        #   low pass filter on accel
-        ax = ax + ALPHA * ( raw_ax - ax )
-        ay = ay + ALPHA * ( raw_ay - ay )
-        az = az + ALPHA * ( raw_az - az )
+        if fabs( raw_gx ) > 200:
+            continue
+        if fabs( raw_ax ) > 150:
+            continue
 
-        ax_scaled = ax / FSAccel
-        ay_scaled = ay / FSAccel
-        az_scaled = az / FSAccel
+        ax_scaled = raw_ax / FSAccel
+        ay_scaled = raw_ay / FSAccel
+        az_scaled = raw_az / FSAccel
 
         gx_scaled = raw_gx / FSGyro
         gy_scaled = raw_gy / FSGyro
@@ -85,16 +84,18 @@ def main():
         #   roll
         roll = gx_scaled * delta_t # [131*degree/second]
         roll_accel = atan( ay_scaled / sqrt( ax_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
-        roll_filtered = CompCoef * ( roll_filtered + roll ) + ( 1 - CompCoef ) * roll_accel # [131*degree/second]
+        roll_comp_filtered = CompCoef * ( roll_comp_filtered + roll ) + ( 1 - CompCoef ) * roll_accel # [131*degree/second]
 
         #   pitch
         pitch = gy_scaled * delta_t # [131*degree/second]
         pitch_accel = atan( ax_scaled / sqrt( ay_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
-        pitch_filtered = CompCoef * ( pitch_filtered + pitch ) + ( 1 - CompCoef ) * pitch_accel # [131*degree/second]
+        pitch_comp_filtered = CompCoef * ( pitch_comp_filtered + pitch ) + ( 1 - CompCoef ) * pitch_accel # [131*degree/second]
+
+        print pitch, pitch_accel, pitch_comp_filtered
 
         #   linear acceleration
-        linear_ax = ax_scaled + pitch_filtered * G # [9.81*meter/second**2]
-        linear_ay = ay_scaled - roll_filtered * G # [9.81*meter/second**2]
+        linear_ax = ax_scaled + pitch_comp_filtered * G # [9.81*meter/second**2]
+        linear_ay = ay_scaled - roll_comp_filtered * G # [9.81*meter/second**2]
         linear_az = az_scaled - G # [9.81*meter/second**2]
 
         #   distance
@@ -102,15 +103,26 @@ def main():
         distance = velocity * delta_t + distance
 
         #   store in x-y list
-        y1.append( linear_ax )
-        y2.append( linear_ay )
-        y3.append( linear_az )
+        if DisplayMode == 1:
+            y1.append( linear_ax )
+            y2.append( linear_ay )
+            y3.append( linear_az )
+
+        if DisplayMode == 2:
+            y1.append( raw_ax )
+            y2.append( raw_ay )
+            y3.append( raw_az )
+
+        if DisplayMode == 3:
+            y1.append( raw_gx )
+            y2.append( raw_gy )
+            y3.append( raw_gz )
 
         x_value += delta_t
         x.append( x_value )
 
     #   plot
-    fig = plt.figure( 'Acceleration (y) vs. Distance (x)' )
+    fig = plt.figure( 'Linear Acceleration (g) vs. Time (s)' )
 
     ax1 = fig.add_subplot( 311 )
     ax1.plot( x, y1 )
@@ -120,6 +132,12 @@ def main():
 
     ax3 = fig.add_subplot( 313 )
     ax3.plot( x, y3 )
+
+    #   label
+    ax1.set_ylabel( 'x' )
+    ax2.set_ylabel( 'Linear Acceleration (g)\ny' )
+    ax3.set_ylabel( 'z' )
+    ax3.set_xlabel( 'Time (s)' )
 
     plt.show()
 
