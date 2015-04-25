@@ -30,33 +30,20 @@ address = 0x68       # This is the address value read via the i2cdetect command
 # Now wake the 6050 up as it starts in sleep mode
 bus.write_byte_data(address, power_mgmt_1, 0)
 
+ax = list()
+ay = list()
+az = list()
+gx = list()
+gy = list()
+gz = list()
 
-
-#   ax, ay, az, gx, gy, gz
-rawData = [
-    read_word_2c(0x3b),
-    read_word_2c(0x3d),
-    read_word_2c(0x3f),
-    read_word_2c(0x43),
-    read_word_2c(0x45),
-    read_word_2c(0x47)
-]
-
-minValue = list()
-maxValue = list()
-
-for x in rawData:
-    minValue.append( x )
-    maxValue.append( x )
-
-print '-------- Before --------'
-print minValue
-print maxValue
-
-for i in range(2000):
+print 'Collection data.....'
+for i in range(10000):
 
     #########################
     #   read data
+
+    #   ax, ay, az, gx, gy, gz
     rawData = [
         read_word_2c(0x3b),
         read_word_2c(0x3d),
@@ -66,20 +53,28 @@ for i in range(2000):
         read_word_2c(0x47)
     ]
 
-    for index, value in enumerate( rawData ):
-        if minValue[ index ] > value:
-            minValue[ index ] = value
-        if maxValue[ index ] < value:
-            maxValue[ index ] = value
+    ax.append( rawData[0] )
+    ay.append( rawData[1] )
+    az.append( rawData[2] )
+    gx.append( rawData[3] )
+    gy.append( rawData[4] )
+    gz.append( rawData[5] )
 
-print '-------- After --------'
-print minValue
-print maxValue
+    print i, ': ',
+    print rawData[0],
+    print rawData[1],
+    print rawData[2],
+    print rawData[3],
+    print rawData[4],
+    print rawData[5]
 
-aveValue = list()
-for index in range( 0, len( minValue ) ):
-    aveValue.append( int( ( minValue[ index ] + maxValue[ index ] ) / 2.0 ) )
-aveValue[2] -= 16384
+print
+print
+print '##### RESULT #####'
+print int( sum( ax ) / float( len( ax ) ) ),
+print int( sum( ay ) / float( len( ay ) ) ),
+print int( sum( az ) / float( len( az ) ) ) - 16384,
+print int( sum( gx ) / float( len( gx ) ) ),
+print int( sum( gy ) / float( len( gy ) ) ),
+print int( sum( gz ) / float( len( gz ) ) )
 
-print '--------- Result -----------'
-print aveValue
