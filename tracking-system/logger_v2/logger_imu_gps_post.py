@@ -19,8 +19,10 @@ device_id = 1234
 
 #	amr server
 #url = 'http://183.90.171.55:8080/log'
+
 #	local
-url = 'http://localhost:8080/log'
+#url = 'http://localhost:8080/log'
+url = 'http://192.168.1.131:8080/log'
 #url = 'http://192.168.43.155:8080/log'
 
 #imu_offset = [ 56, -142, -294, -246, 192, 144 ]
@@ -59,32 +61,32 @@ class ImuRaw():
 
 	def __init__( self, withOffset=False ):
 
-#		if withOffset:
-#			#	acceleration
-#			self.ax = read_word_2c(0x3b) - imu_offset[0]
-#			self.ay = read_word_2c(0x3d) - imu_offset[1]
-#			self.az = read_word_2c(0x3f) - imu_offset[2]
-#			#   gyro
-#			self.gx = read_word_2c(0x43) - imu_offset[3]
-#			self.gy = read_word_2c(0x45) - imu_offset[4]
-#			self.gz = read_word_2c(0x47) - imu_offset[5]
-#
-#		else:
-#			#	acceleration
-#			self.ax = read_word_2c(0x3b)
-#			self.ay = read_word_2c(0x3d)
-#			self.az = read_word_2c(0x3f)
-#			#   gyro
-#			self.gx = read_word_2c(0x43)
-#			self.gy = read_word_2c(0x45)
-#			self.gz = read_word_2c(0x47)
+		if withOffset:
+			#	acceleration
+			self.ax = read_word_2c(0x3b) - imu_offset[0]
+			self.ay = read_word_2c(0x3d) - imu_offset[1]
+			self.az = read_word_2c(0x3f) - imu_offset[2]
+			#   gyro
+			self.gx = read_word_2c(0x43) - imu_offset[3]
+			self.gy = read_word_2c(0x45) - imu_offset[4]
+			self.gz = read_word_2c(0x47) - imu_offset[5]
 
-		self.ax = randint( 0, 16384 )
-		self.ay = randint( 0, 16384 )
-		self.az = randint( 0, 16384 )
-		self.gx = randint( 0, 16384 )
-		self.gy = randint( 0, 16384 )
-		self.gz = randint( 0, 16384 )
+		else:
+			#	acceleration
+			self.ax = read_word_2c(0x3b)
+			self.ay = read_word_2c(0x3d)
+			self.az = read_word_2c(0x3f)
+			#   gyro
+			self.gx = read_word_2c(0x43)
+			self.gy = read_word_2c(0x45)
+			self.gz = read_word_2c(0x47)
+
+#		self.ax = randint( 0, 16384 )
+#		self.ay = randint( 0, 16384 )
+#		self.az = randint( 0, 16384 )
+#		self.gx = randint( 0, 16384 )
+#		self.gy = randint( 0, 16384 )
+#		self.gz = randint( 0, 16384 )
 
 
 ###############################################
