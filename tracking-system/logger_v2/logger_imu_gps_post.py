@@ -130,17 +130,17 @@ def main():
 	#	Initialize
 	#
 
-#	bus = smbus.SMBus(1) # for Revision 2 boards
-#
-#	# Power management registers
-#	power_mgmt_1 = 0x6b
-#	power_mgmt_2 = 0x6c
-#
-#	# This is the address value read via the i2cdetect command
-#	address = 0x68
-#
-#	# Now wake the 6050 up as it starts in sleep mode
-#	bus.write_byte_data(address, power_mgmt_1, 0)
+	bus = smbus.SMBus(1) # for Revision 2 boards
+
+	# Power management registers
+	power_mgmt_1 = 0x6b
+	power_mgmt_2 = 0x6c
+
+	# This is the address value read via the i2cdetect command
+	address = 0x68
+
+	# Now wake the 6050 up as it starts in sleep mode
+	bus.write_byte_data(address, power_mgmt_1, 0)
 
 	data_list = [ device_id, False, False, False ]
 	#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
