@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, Column, Integer, DateTime, Float, ForeignK
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
-import bson.json_util
+#import bson.json_util
 
 
 ###############################################################################
@@ -66,11 +66,7 @@ class AlchemyEncoder(json.JSONEncoder):
 					data = json.dumps(data)
 					fields[field] = data
 				except TypeError:
-					try:
-						data = json.dumps(data, default=bson.json_util.default)
-						fields[field] = data
-					except:
-						fields[field] = None
+					fields[field] = None
 			# a json-encodable dict
 			return fields
 
@@ -179,5 +175,6 @@ def index():
 	return render_template( 'index.html', latitude=latitude, longitude=longitude )
 
 if __name__ == '__main__':
-	app.run( host='0.0.0.0', port=8080 )
+	#app.run( host='0.0.0.0', port=8080 )
+	app.run( host='0.0.0.0', port=8080, debug=True )
 	# app.run( debug=True )

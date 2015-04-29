@@ -4,8 +4,10 @@ import os
 import json
 import ast
 import random
+import datetime
+from pprint import pprint
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from sqlalchemy import create_engine, Column, Integer, DateTime, Float, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -23,7 +25,7 @@ class Log( Base ):
 	__tablename__ = 'logs'
 
 	id = Column(Integer, primary_key=True)
-	server_timestamp = Column(DateTime, nullable=True)
+	server_timestamp = Column(DateTime)
 	device_id = Column(Integer)
 	device_timestamp = Column(DateTime, nullable=True)
 	latitude = Column(Float, nullable=True)
@@ -32,7 +34,7 @@ class Log( Base ):
 	imu = relationship('Imu')
 
 	def __repr__(self):
-		return 'timestamp = {}, latitude = {}, longitude = {}'.format( self.device_timestamp, self.latitude, self.longitude )
+		return 'device_timestamp = {}, latitude = {}, longitude = {}, imu = {}'.format( self.device_timestamp, self.latitude, self.longitude, self.imu )
 
 
 class Imu(Base):
@@ -49,7 +51,7 @@ class Imu(Base):
 	dt = Column(Float, nullable=True)
 
 	def __repr__(self):
-		return '{} {} {} {} {} {}'.format( self.ax, self.ay, self.az, self.gx, self.gy, self.gz )
+		return '[ {}, {}, {}, {}, {}, {} ]'.format( self.ax, self.ay, self.az, self.gx, self.gy, self.gz )
 
 
 class AlchemyEncoder(json.JSONEncoder):
@@ -104,69 +106,6 @@ session = DBSession()
 
 app = Flask(__name__)
 
-@app.route( '/log', methods = [ 'POST' ] )
-def store():
-	post_data = request.json
-	new_log = Log(
-		server_timestamp=datetime.datetime.now(),
-		device_id=post_data[0],
-		device_timestamp=datetime.datetime.strptime(post_data[1],
-											 '%Y-%m-%dT%H:%M:%S') or False,
-		latitude=post_data[2] or False,
-		longitude=post_data[3] or False
-	)
-	new_log.imu = []
-	for e in post_data[4]:
-		new_log.imu.append(Imu(
-			ax=e[0], ay=e[1], az=e[2], gx=e[3], gy=e[4], gz=e[5], dt=e[6]
-		))
-	session.add(new_log)
-	session.commit()
-
-@app.route( '/log', methods = [ 'GET' ] )
-def getLog():
-	obj = session.query(Imu).order_by(Imu.id.desc()).limit(100000).all()
-	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-	resultDictList = ast.literal_eval( resultDictListStr )
-	return resultDictListStr
-
-@app.route('/test1', methods = [ 'GET' ] )
-def test1():
-	obj = session.query(Imu).order_by(Imu.id.desc()).limit(10).all()
-
-	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-
-	resultDictList = ast.literal_eval( resultDictListStr )
-
-
-	data = list()
-	for i in range(80):
-		data.append(i * 0.01)
-	return render_template( 'test1.html', data=data )
-
-@app.route( '/api/position', methods = [ 'GET' ] )
-def position():
-	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
-	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-	resultDictList = ast.literal_eval( resultDictListStr )
-
-	# latitude = resultDictList[0]
-	# longitude = resultDictList[1]
-	latitude = random.uniform(13.8475145, 13.8475145 + 0.001)
-	longitude = random.uniform(100.5674436, 100.5674436 + 0.001)
-
-	print latitude
-	print longitude
-
-	outputDict = {
-		'lat': latitude,
-		'lon': longitude
-	}
-
-	# return '{} {}'.format( latitude, longitude )
-	return jsonify(**outputDict)
-
-
 @app.route( '/', methods = [ 'GET' ] )
 def index():
 	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
@@ -181,6 +120,87 @@ def index():
 
 	return render_template( 'index.html', latitude=latitude, longitude=longitude )
 
+
+@app.route( '/log', methods = [ 'GET' ] )
+def getLog():
+	app.logger.info('Get log')
+	obj = session.query(Imu).order_by(Imu.id.desc()).limit(100000).all()
+	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
+	resultDictList = ast.literal_eval( resultDictListStr )
+	return resultDictListStr
+
+
+@app.route( '/log', methods = [ 'POST' ] )
+def store():
+
+	post_data = request.json
+
+	app.logger.info('Store data')
+
+	print 'Create Log object'
+	new_log = Log(
+		server_timestamp = datetime.datetime.now(),
+		device_id = post_data[0],
+		device_timestamp = datetime.datetime.strptime(
+			post_data[1], '%Y-%m-%dT%H:%M:%S') if post_data[1] else None,
+		latitude = post_data[2] if post_data[2] else None,
+		longitude = post_data[3] if post_data[3] else None
+	)
+	new_log.imu = []
+	print 'Loop through imu'
+	for e in post_data[4]:
+		print e
+		new_log.imu.append(Imu(
+			ax=e[0], ay=e[1], az=e[2], gx=e[3], gy=e[4], gz=e[5], dt=e[6]
+		))
+
+	pprint( new_log )
+
+	session.add(new_log)
+	session.commit()
+
+	return 'ok'
+
+
+#@app.route('/test1', methods = [ 'GET' ] )
+#def test1():
+#	obj = session.query(Imu).order_by(Imu.id.desc()).limit(10).all()
+#
+#	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
+#
+#	resultDictList = ast.literal_eval( resultDictListStr )
+#
+#
+#	data = list()
+#	for i in range(80):
+#		data.append(i * 0.01)
+#	return render_template( 'test1.html', data=data )
+#
+#
+#@app.route( '/api/position', methods = [ 'GET' ] )
+#def position():
+#	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
+#	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
+#	resultDictList = ast.literal_eval( resultDictListStr )
+#
+#	# latitude = resultDictList[0]
+#	# longitude = resultDictList[1]
+#	latitude = random.uniform(13.8475145, 13.8475145 + 0.001)
+#	longitude = random.uniform(100.5674436, 100.5674436 + 0.001)
+#
+#	print latitude
+#	print longitude
+#
+#	outputDict = {
+#		'lat': latitude,
+#		'lon': longitude
+#	}
+#
+#	# return '{} {}'.format( latitude, longitude )
+#	return jsonify(**outputDict)
+
+
 if __name__ == '__main__':
-	# app.run( host='0.0.0.0', port=8080 )
-	app.run( debug=True )
+	#app.run( host='0.0.0.0', port=8080 )
+	app.run( host='0.0.0.0', port=8080, debug=True )
+	#app.run( debug=True )
