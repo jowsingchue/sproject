@@ -15,6 +15,42 @@ import smbus
 #
 #	Constant
 #
+
+device_id = 1234
+
+#	amr server
+#url = 'http://183.90.171.55:8080/log'
+
+#	local
+#url = 'http://localhost:8080/log'
+url = 'http://192.168.1.131:8080/log'
+#url = 'http://192.168.43.155:8080/log'
+
+#imu_offset = [ 56, -142, -294, -246, 192, 144 ]
+
+
+###############################################
+#
+#	Global
+#
+
+# Power management registers
+power_mgmt_1 = 0x6b
+power_mgmt_2 = 0x6c
+
+bus = smbus.SMBus(1) # for Revision 2 boards
+
+# This is the address value read via the i2cdetect command
+address = 0x68
+
+# Now wake the 6050 up as it starts in sleep mode
+bus.write_byte_data(address, power_mgmt_1, 0)
+
+
+###############################################
+#
+#	Constant
+#
 device_id = 1234
 
 #	amr server
@@ -130,17 +166,6 @@ def main():
 	#	Initialize
 	#
 
-	bus = smbus.SMBus(1) # for Revision 2 boards
-
-	# Power management registers
-	power_mgmt_1 = 0x6b
-	power_mgmt_2 = 0x6c
-
-	# This is the address value read via the i2cdetect command
-	address = 0x68
-
-	# Now wake the 6050 up as it starts in sleep mode
-	bus.write_byte_data(address, power_mgmt_1, 0)
 
 	data_list = [ device_id, False, False, False ]
 	#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
