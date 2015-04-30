@@ -195,8 +195,8 @@ def main():
 	imu_list = list()
 	while True:
 
-#		if time.time() - lastPostTime >= 2:
-		if not gps_data.empty():
+		if time.time() - lastPostTime >= 2:
+#		if not gps_data.empty():
 
 			#	pack and send data
 			data_list.append( imu_list )
