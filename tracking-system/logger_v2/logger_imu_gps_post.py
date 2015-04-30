@@ -121,21 +121,24 @@ def gps_logger( gps_data, results ):
 
 	while True:
 
-		report = session.next()
-		# Wait for a 'TPV' report and get the information
+		try:
+			report = session.next()
+			# Wait for a 'TPV' report and get the information
 
-		if report['class'] == 'TPV':
+			if report['class'] == 'TPV':
 
-			if hasattr(report, 'time'):
-				timestamp = report.time
-			if hasattr(report, 'lat'):
-				latitude = report.lat
-			if hasattr(report, 'lon'):
-				longitude = report.lon
+				if hasattr(report, 'time'):
+					timestamp = report.time
+				if hasattr(report, 'lat'):
+					latitude = report.lat
+				if hasattr(report, 'lon'):
+					longitude = report.lon
 
-			#	hack timestamp,
-			#	from '2015-03-30T16:09:29.000Z' to '2015-03-30T16:09:29'
-			gps_data.put( [ device_id, timestamp[0:19], latitude, longitude ] )
+				#	hack timestamp,
+				#	from '2015-03-30T16:09:29.000Z' to '2015-03-30T16:09:29'
+				gps_data.put( [ device_id, timestamp[0:19], latitude, longitude ] )
+		except:
+			print 'unable to get GPS data'
 
 def do_post( payload, results ):
 	while True:
