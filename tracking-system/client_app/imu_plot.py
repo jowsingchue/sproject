@@ -10,6 +10,11 @@ from matplotlib import pyplot as plt
 
 #	GLOBAL
 url = 'http://183.90.171.55:8080/log'
+
+# sensor offset: ax, ay, az, gx, gy, gz
+#OFFSET = [750, -28, -258, -256, 252, 139]
+OFFSET = [ 0, 0, 0, 0, 0, 0 ]
+
 READ_FS_SEL = 0
 
 G = 1
@@ -18,9 +23,6 @@ CompCoef = 0.999
 FSAccel = 16384.0
 FSGyro = 131.0/(READ_FS_SEL + 1)
 
-# sensor offset: ax, ay, az, gx, gy, gz
-#OFFSET = [750, -28, -258, -256, 252, 139]
-OFFSET = [ 0, 0, 0, 0, 0, 0 ]
 
 
 def main():

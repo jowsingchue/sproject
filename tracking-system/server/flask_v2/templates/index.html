@@ -72,7 +72,8 @@ function initialize() {
 	var position;
 	(function worker() {
 		$.ajax({
-			url: 'http://localhost:8080/api/position',
+//			url: 'http://localhost:8080/api/position',
+			url: 'http://183.90.171.55:8080/api/position',
 			success: function(data) {
 				// $('.result').html(data);
 				position = data
