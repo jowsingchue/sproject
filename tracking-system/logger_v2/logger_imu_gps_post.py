@@ -6,6 +6,7 @@ import random
 import json
 import datetime
 
+import gps
 import requests
 import smbus
 
