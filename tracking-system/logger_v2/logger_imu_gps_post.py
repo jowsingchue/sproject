@@ -221,10 +221,8 @@ def main():
 			lastPostTime = time.time()
 
 			if not gps_data.empty():
-				allGps = queue_get_all( gps_data )
-				print allGps[0], allGps[-1]
-				#data_list = gps_data.get()
-				data_list = allGps[0]
+				all_gps = queue_get_all( gps_data )
+				data_list = all_gps[-1]
 			else:
 				#	add new dummy gps data
 				data_list = [ device_id, False, False, False ]
