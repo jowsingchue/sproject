@@ -1,4 +1,3 @@
-from optparse import OptionParser
 from multiprocessing import Process, Queue
 from random import randint
 from pprint import pprint
@@ -19,11 +18,11 @@ import smbus
 device_id = 1234
 
 #	amr server
-#url = 'http://183.90.171.55:8080/log'
+url = 'http://183.90.171.55:8080/log'
 
 #	local
 #url = 'http://localhost:8080/log'
-url = 'http://192.168.1.131:8080/log'
+#url = 'http://192.168.1.131:8080/log'
 #url = 'http://192.168.43.155:8080/log'
 
 #imu_offset = [ 56, -142, -294, -246, 192, 144 ]
@@ -130,6 +129,31 @@ class ImuRaw():
 #	Process
 #
 
+def gps_logger( gps_data, results ):
+
+	session = gps.gps("localhost", "2947")
+	session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+
+	time.sleep(1)
+
+	while True:
+
+		report = session.next()
+		# Wait for a 'TPV' report and get the information
+
+		if report['class'] == 'TPV':
+
+			if hasattr(report, 'time'):
+				timestamp = report.time
+			if hasattr(report, 'lat'):
+				latitude = report.lat
+			if hasattr(report, 'lon'):
+				longitude = report.lon
+
+			#	hack timestamp,
+			#	from '2015-03-30T16:09:29.000Z' to '2015-03-30T16:09:29'
+			gps_data.put( [ device_id, timestamp[0:19], latitude, longitude ] )
+
 def do_post( payload, results ):
 	while True:
 		time.sleep(0.1)
@@ -153,10 +177,11 @@ def do_post( payload, results ):
 
 def main():
 
-	#	option
-	parser = OptionParser()
-	
 	results = Queue()
+
+	gps_data = Queue()
+	gps_process = Process( target=gps_logger, args=( gps_data, results ) )
+
 	payload = Queue()
 	post_process = Process( target=do_post, args=( payload, results ) )
 
@@ -167,8 +192,12 @@ def main():
 	#
 
 
-	data_list = [ device_id, False, False, False ]
-	#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
+	if not gps_data.empty():
+		data_list = gps_data.get()
+	else:
+		data_list = [ device_id, False, False, False ]
+		#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
+
 	imu = ImuRaw()
 	lastReadTime = time.time()
 	lastPostTime = time.time()
@@ -190,10 +219,13 @@ def main():
 			#	Reset
 			imu_list = list()
 			lastPostTime = time.time()
-			
-			#	add new dummy gps data
-			data_list = [ device_id, False, False, False ]
-			#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
+
+			if not gps_data.empty():
+				data_list = gps_data.get()
+			else:
+				#	add new dummy gps data
+				data_list = [ device_id, False, False, False ]
+				#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
 
 
 		#########################
