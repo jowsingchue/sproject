@@ -188,6 +188,7 @@ def main():
 	lastReadTime = time.time()
 	lastPostTime = time.time()
 
+	gps_process.start()
 	post_process.start()
 
 	imu_list = list()
