@@ -165,9 +165,9 @@ def do_post( payload, results ):
 			try:
 				headers = {'content-type': 'application/json'}
 				r = requests.post(url, data=json.dumps(data_payload), headers=headers)
-				print(r.status_code)
+				print 'Send data success,', r.status_code
 			except:
-				print("Failed to send data")
+				print 'Failed to send data'
 
 
 ###############################################
