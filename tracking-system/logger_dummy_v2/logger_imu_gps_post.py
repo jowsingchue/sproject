@@ -18,9 +18,9 @@ import requests
 device_id = 1234
 
 #	amr server
-#url = 'http://183.90.171.55:8080/log'
+url = 'http://183.90.171.55:8080/log'
 #	local
-url = 'http://localhost:8080/log'
+#url = 'http://localhost:8080/log'
 #url = 'http://192.168.43.155:8080/log'
 
 #imu_offset = [ 56, -142, -294, -246, 192, 144 ]

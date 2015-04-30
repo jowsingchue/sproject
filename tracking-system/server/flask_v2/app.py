@@ -123,8 +123,12 @@ def index():
 
 @app.route( '/log', methods = [ 'GET' ] )
 def getLog():
+
 	app.logger.info('Get log')
-	obj = session.query(Imu).order_by(Imu.id.desc()).limit(100000).all()
+
+	num_record = request.json
+
+	obj = session.query(Imu).order_by(Imu.id.desc()).limit(num_record).all()
 	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
 	resultDictList = ast.literal_eval( resultDictListStr )
 	return resultDictListStr
@@ -133,11 +137,10 @@ def getLog():
 @app.route( '/log', methods = [ 'POST' ] )
 def store():
 
-	post_data = request.json
-
 	app.logger.info('Store data')
 
-	print 'Create Log object'
+	post_data = request.json
+
 	new_log = Log(
 		server_timestamp = datetime.datetime.now(),
 		device_id = post_data[0],
@@ -146,15 +149,12 @@ def store():
 		latitude = post_data[2] if post_data[2] else None,
 		longitude = post_data[3] if post_data[3] else None
 	)
+
 	new_log.imu = []
-	print 'Loop through imu'
 	for e in post_data[4]:
-		print e
-		new_log.imu.append(Imu(
+		new_log.imu.append( Imu(
 			ax=e[0], ay=e[1], az=e[2], gx=e[3], gy=e[4], gz=e[5], dt=e[6]
 		))
-
-	pprint( new_log )
 
 	session.add(new_log)
 	session.commit()
@@ -201,6 +201,6 @@ def store():
 
 
 if __name__ == '__main__':
-	#app.run( host='0.0.0.0', port=8080 )
-	app.run( host='0.0.0.0', port=8080, debug=True )
+	app.run( host='0.0.0.0', port=8080 )
+	#app.run( host='0.0.0.0', port=8080, debug=True )
 	#app.run( debug=True )
