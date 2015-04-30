@@ -75,7 +75,7 @@ def queue_get_all(q):
 			if numOfItemsRetrieved == maxItemsToRetreive:
 				break
 			items.append(q.get_nowait())
-		except Empty, e:
+		except e:
 			break
 	return items
 
