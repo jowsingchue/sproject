@@ -67,6 +67,17 @@ def read_word_2c(adr):
 	else:
 		return val
 
+def queue_get_all(q):
+	items = []
+	maxItemsToRetreive = 10
+	for numOfItemsRetrieved in range(0, maxItemsToRetreive):
+		try:
+			if numOfItemsRetrieved == maxItemsToRetreive:
+				break
+			items.append(q.get_nowait())
+		except Empty, e:
+			break
+	return items
 
 ###############################################
 #
@@ -85,7 +96,7 @@ class ImuRaw():
 			self.ax = read_word_2c(0x3b) - imu_offset[0]
 			self.ay = read_word_2c(0x3d) - imu_offset[1]
 			self.az = read_word_2c(0x3f) - imu_offset[2]
-			#   gyro
+			#	gyro
 			self.gx = read_word_2c(0x43) - imu_offset[3]
 			self.gy = read_word_2c(0x45) - imu_offset[4]
 			self.gz = read_word_2c(0x47) - imu_offset[5]
@@ -95,7 +106,7 @@ class ImuRaw():
 			self.ax = read_word_2c(0x3b)
 			self.ay = read_word_2c(0x3d)
 			self.az = read_word_2c(0x3f)
-			#   gyro
+			#	gyro
 			self.gx = read_word_2c(0x43)
 			self.gy = read_word_2c(0x45)
 			self.gz = read_word_2c(0x47)
@@ -210,7 +221,10 @@ def main():
 			lastPostTime = time.time()
 
 			if not gps_data.empty():
-				data_list = gps_data.get()
+				allGps = queue_get_all( gps_data )
+				print allGps[0], allGps[-1]
+				#data_list = gps_data.get()
+				data_list = allGps[0]
 			else:
 				#	add new dummy gps data
 				data_list = [ device_id, False, False, False ]
@@ -218,11 +232,11 @@ def main():
 
 
 		#########################
-		#   read imu data
+		#	read imu data
 
 		imu = ImuRaw()
 
-		#   time period
+		#	time period
 		now = time.time()
 		dt = now - lastReadTime
 		lastReadTime = now
