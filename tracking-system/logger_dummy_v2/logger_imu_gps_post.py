@@ -18,9 +18,9 @@ import requests
 device_id = 1234
 
 #	amr server
-url = 'http://183.90.171.55:8080/log'
+#url = 'http://183.90.171.55:8080/log'
 #	local
-#url = 'http://localhost:8080/log'
+url = 'http://localhost:8080/log'
 #url = 'http://192.168.43.155:8080/log'
 
 #imu_offset = [ 56, -142, -294, -246, 192, 144 ]
@@ -140,8 +140,8 @@ def main():
 #	# Now wake the 6050 up as it starts in sleep mode
 #	bus.write_byte_data(address, power_mgmt_1, 0)
 
-	data_list = [ device_id, False, False, False ]
-	#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
+	#data_list = [ device_id, False, False, False ]
+	data_list = [ device_id, '2015-03-30T16:09:29', 13.8486997,100.5491168 ]
 	imu = ImuRaw()
 	lastReadTime = time.time()
 	lastPostTime = time.time()
@@ -165,8 +165,8 @@ def main():
 			lastPostTime = time.time()
 			
 			#	add new dummy gps data
-			data_list = [ device_id, False, False, False ]
-			#data_list = [ device_id, '2015-03-30T16:09:29', 100.123123, 35.232323 ]
+			#data_list = [ device_id, False, False, False ]
+			data_list = [ device_id, '2015-03-30T16:09:29', 13.8486997,100.5491168 ]
 
 
 		#########################

@@ -17,6 +17,15 @@ from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 ###############################################################################
 #
+#	Global
+#
+
+#	amr location
+latitude = 13.851867
+longitude = 100.567519
+
+###############################################################################
+#
 #	Database
 #
 Base = declarative_base()
@@ -106,32 +115,6 @@ session = DBSession()
 
 app = Flask(__name__)
 
-@app.route( '/', methods = [ 'GET' ] )
-def index():
-	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
-	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-	resultDictList = ast.literal_eval( resultDictListStr )
-	print resultDictList
-
-	# latitude = resultDictList[0]
-	# longitude = resultDictList[1]
-	latitude = random.uniform(13.8475145, 13.8475145 + 0.001)
-	longitude = random.uniform(100.5674436, 100.5674436 + 0.001)
-
-	return render_template( 'index.html', latitude=latitude, longitude=longitude )
-
-
-@app.route( '/log', methods = [ 'GET' ] )
-def getLog():
-
-	app.logger.info('Get log')
-
-	num_record = request.json
-
-	obj = session.query(Imu).order_by(Imu.id.desc()).limit(num_record).all()
-	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-	resultDictList = ast.literal_eval( resultDictListStr )
-	return resultDictListStr
 
 
 @app.route( '/log', methods = [ 'POST' ] )
@@ -162,45 +145,63 @@ def store():
 	return 'ok'
 
 
-#@app.route('/test1', methods = [ 'GET' ] )
-#def test1():
-#	obj = session.query(Imu).order_by(Imu.id.desc()).limit(10).all()
-#
-#	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-#
-#	resultDictList = ast.literal_eval( resultDictListStr )
-#
-#
-#	data = list()
-#	for i in range(80):
-#		data.append(i * 0.01)
-#	return render_template( 'test1.html', data=data )
-#
-#
-#@app.route( '/api/position', methods = [ 'GET' ] )
-#def position():
-#	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
-#	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
-#	resultDictList = ast.literal_eval( resultDictListStr )
-#
-#	# latitude = resultDictList[0]
-#	# longitude = resultDictList[1]
-#	latitude = random.uniform(13.8475145, 13.8475145 + 0.001)
-#	longitude = random.uniform(100.5674436, 100.5674436 + 0.001)
-#
-#	print latitude
-#	print longitude
-#
-#	outputDict = {
-#		'lat': latitude,
-#		'lon': longitude
-#	}
-#
-#	# return '{} {}'.format( latitude, longitude )
-#	return jsonify(**outputDict)
+@app.route( '/log', methods = [ 'GET' ] )
+def getLog():
+
+	app.logger.info('Get log')
+
+	num_record = request.json
+
+	obj = session.query(Imu).order_by(Imu.id.desc()).limit(num_record).all()
+	resultDictListStr = json.dumps(obj, cls=AlchemyEncoder)
+	resultDictList = ast.literal_eval( resultDictListStr )
+	return resultDictListStr
+
+
+@app.route( '/', methods = [ 'GET' ] )
+def index():
+
+	global latitude
+	global longitude
+
+	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
+	objList = list( obj )
+
+	isFloat = all(isinstance(x,float) for x in objList)
+	if isFloat:
+		latitude = objList[0]
+		longitude = objList[1]
+	
+	return render_template( 'index.html', latitude=latitude, longitude=longitude )
+
+
+@app.route( '/api/position', methods = [ 'GET' ] )
+def position():
+
+	global latitude
+	global longitude
+
+	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
+	objList = list( obj )
+
+#	isFloat = all(isinstance(x,float) for x in objList)
+#	if isFloat:
+#		latitude = objList[0]
+#		longitude = objList[1]
+	
+	latitude = random.uniform(13.851867, 13.851867 + 0.001)
+	longitude = random.uniform(100.567519, 100.567519 + 0.001)
+
+	outputDict = {
+		'lat': latitude,
+		'lon': longitude
+	}
+
+	# return '{} {}'.format( latitude, longitude )
+	return jsonify(**outputDict)
 
 
 if __name__ == '__main__':
-	app.run( host='0.0.0.0', port=8080 )
-	#app.run( host='0.0.0.0', port=8080, debug=True )
+	#app.run( host='0.0.0.0', port=8080 )
+	app.run( host='0.0.0.0', port=8080, debug=True )
 	#app.run( debug=True )

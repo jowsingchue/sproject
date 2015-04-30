@@ -56,23 +56,23 @@ function initialize() {
 	marker.setMap(map);
 
 
-	// Zoom to 9 when clicking on marker
-	// google.maps.event.addListener(marker, 'click', function() {
-	// 	map.setZoom(9);
-	// 	map.setCenter(marker.getPosition());
-	// });
-
-	// google.maps.event.addListener(map, 'center_changed', function() {
-	// 	// 3 seconds after the center of the map has changed, pan back to the marker
-	// 	window.setTimeout(function() {
-	// 		map.panTo(marker.getPosition());
-	// 	}, 3000);
-	// });
+//	Zoom to 9 when clicking on marker
+//	google.maps.event.addListener(marker, 'click', function() {
+//		map.setZoom(9);
+//		map.setCenter(marker.getPosition());
+//	});
+//
+	google.maps.event.addListener(map, 'center_changed', function() {
+		// 3 seconds after the center of the map has changed, pan back to the marker
+		window.setTimeout(function() {
+			map.panTo(marker.getPosition());
+		}, 500);
+	});
 
 	var position;
 	(function worker() {
 		$.ajax({
-			url: 'http://183.90.171.55:8080/api/position',
+			url: 'http://localhost:8080/api/position',
 			success: function(data) {
 				// $('.result').html(data);
 				position = data
