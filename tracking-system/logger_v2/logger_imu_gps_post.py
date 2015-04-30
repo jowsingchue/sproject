@@ -136,8 +136,8 @@ def do_post( payload, results ):
 		if not payload.empty():
 
 			data_payload = payload.get()
-			print
-			pprint( data_payload )
+#			print
+#			pprint( data_payload )
 			try:
 				headers = {'content-type': 'application/json'}
 				r = requests.post(url, data=json.dumps(data_payload), headers=headers)
