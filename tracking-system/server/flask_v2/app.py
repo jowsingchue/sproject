@@ -186,13 +186,13 @@ def position():
 	obj = session.query(Log.latitude, Log.longitude).order_by(Log.id.desc()).first()
 	objList = list( obj )
 
-	isFloat = all(isinstance(x,float) for x in objList)
-	if isFloat:
-		latitude = objList[0]
-		longitude = objList[1]
+#	isFloat = all(isinstance(x,float) for x in objList)
+#	if isFloat:
+#		latitude = objList[0]
+#		longitude = objList[1]
 	
-#	latitude = random.uniform(13.851867, 13.851867 + 0.001)
-#	longitude = random.uniform(100.567519, 100.567519 + 0.001)
+	latitude = random.uniform(13.851867, 13.851867 + 0.001)
+	longitude = random.uniform(100.567519, 100.567519 + 0.001)
 
 	outputDict = {
 		'lat': latitude,
