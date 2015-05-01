@@ -2,18 +2,21 @@
 import argparse
 import json
 from pprint import pprint
-from math import atan, sqrt, fabs
+from math import atan, sqrt, fabs, pi
 
 #	external modules
 import requests
 from matplotlib import pyplot as plt
+from scipy.fftpack import fft
+import numpy
 
 #	GLOBAL
-url = 'http://183.90.171.55:8080/log'
+#url = 'http://183.90.171.55:8080/log'
+url = 'http://localhost:8080/log'
 
 # sensor offset: ax, ay, az, gx, gy, gz
 #OFFSET = [750, -28, -258, -256, 252, 139]
-OFFSET = [ 0, 0, 0, 0, 0, 0 ]
+OFFSET = [ -600, 0, 0, -244, 169, 144 ]
 
 READ_FS_SEL = 0
 
@@ -64,11 +67,18 @@ def main():
 	ay_scaled = raw_ay / FSAccel
 	az_scaled = raw_az / FSAccel
 
+	gx_scaled = raw_gx / FSGyro
+	gy_scaled = raw_gy / FSGyro
+
 	roll_comp_filtered = atan( ay_scaled / sqrt( ax_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
 	pitch_comp_filtered = atan( ax_scaled / sqrt( ay_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
 
 	velocity = 0
 	distance = 0
+
+	gx_degree = raw_gx / 131.0
+	gy_degree = raw_gy / 131.0
+	gz_degree = raw_gz / 131.0
 
 	for dataDict in sortedByIdDictList[1:]:
 
@@ -90,6 +100,8 @@ def main():
 		ay_scaled = raw_ay / FSAccel
 		az_scaled = raw_az / FSAccel
 
+#		gx_scaled = raw_gx / FSGyro
+#		gy_scaled = raw_gy / FSGyro
 		gx_scaled = raw_gx / FSGyro
 		gy_scaled = raw_gy / FSGyro
 
@@ -104,11 +116,25 @@ def main():
 		pitch_accel = atan( ax_scaled / sqrt( ay_scaled**2 + az_scaled**2 ) ) # [131*degree/second]
 		pitch_comp_filtered = CompCoef * ( pitch_comp_filtered + pitch ) + ( 1 - CompCoef ) * pitch_accel # [131*degree/second]
 
-		print pitch, pitch_accel, pitch_comp_filtered
+		print pitch_comp_filtered, roll_comp_filtered
+
+		# ------------------------------------------------------------------
+		gx_dps = raw_gx / 131.0 - 0.0597 # sensitivity drift
+		gy_dps = raw_gy / 131.0 - 0.032 # sensitivity drift
+		gz_dps = raw_gz / 131.0
+
+		gx_degree = gx_degree + gx_dps * delta_t #+ 0.2   # zero drift
+		gy_degree = gy_degree + gy_dps * delta_t #+ 0.16   # zero drift
+		gz_degree = gz_degree + gz_dps * delta_t
+
+		gx_rad = gx_degree * pi / 180.0
+		gy_rad = gy_degree * pi / 180.0
+		gz_rad = gz_degree * pi / 180.0
+		# ------------------------------------------------------------------
 
 		#	linear acceleration
-		linear_ax = ax_scaled + pitch_comp_filtered * G # [9.81*meter/second**2]
-		linear_ay = ay_scaled - roll_comp_filtered * G # [9.81*meter/second**2]
+		linear_ax = ax_scaled + gy_rad * G # [9.81*meter/second**2]
+		linear_ay = ay_scaled - gx_rad * G # [9.81*meter/second**2]
 		linear_az = az_scaled - G # [9.81*meter/second**2]
 
 		#	distance
@@ -131,8 +157,26 @@ def main():
 			y2.append( raw_gy )
 			y3.append( raw_gz )
 
+		if displayMode == 4:
+			y1.append( pitch_comp_filtered )
+			y2.append( roll_comp_filtered )
+			y3.append( raw_gz )
+
+		if displayMode == 5:
+			y1.append( gx_degree )
+			y2.append( gy_degree )
+			y3.append( gz_degree )
+
+		if displayMode == 6:
+			y1.append( gx_degree )
+			y2.append( gy_degree )
+			y3.append( gz_degree )
+
 		x_value += delta_t
 		x.append( x_value )
+
+	#	fft
+	Y = fft( y1 )
 
 	#	plot
 	fig = plt.figure( 'Linear Acceleration (g) vs. Time (s)' )
@@ -145,6 +189,7 @@ def main():
 
 	ax3 = fig.add_subplot( 313 )
 	ax3.plot( x, y3 )
+#	ax3.plot( x, Y )
 
 	#	label
 	ax1.set_ylabel( 'x' )
