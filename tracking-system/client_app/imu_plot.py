@@ -11,8 +11,11 @@ from scipy.fftpack import fft
 import numpy
 
 #	GLOBAL
-#url = 'http://183.90.171.55:8080/log'
-url = 'http://localhost:8080/log'
+
+#   amr server
+url = 'http://183.90.171.55:8080/log'
+
+#url = 'http://localhost:8080/log'
 
 # sensor offset: ax, ay, az, gx, gy, gz
 #OFFSET = [750, -28, -258, -256, 252, 139]
