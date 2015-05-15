@@ -232,7 +232,10 @@ def main():
 		#########################
 		#	read imu data
 
-		imu = ImuRaw()
+		try:
+			imu = ImuRaw()
+		except:
+			continue
 
 		#	time period
 		now = time.time()

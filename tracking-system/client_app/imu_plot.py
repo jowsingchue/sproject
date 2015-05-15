@@ -12,14 +12,15 @@ import numpy
 
 #	GLOBAL
 
-#   amr server
+#	amr server
 url = 'http://183.90.171.55:8080/log'
 
 #url = 'http://localhost:8080/log'
 
 # sensor offset: ax, ay, az, gx, gy, gz
 #OFFSET = [750, -28, -258, -256, 252, 139]
-OFFSET = [ -600, 0, 0, -244, 169, 144 ]
+#OFFSET = [ 0, 0, 0, 0, 0, 0 ]
+OFFSET = [ -235, -410, 6, -229, 142, 132 ]
 
 READ_FS_SEL = 0
 
@@ -43,6 +44,7 @@ def main():
 	displayMode = args.displaymode
 
 	#	get data from server
+	print 'Getting data from server...'
 	headers = {'content-type': 'application/json'}
 	response = requests.get( url, data=json.dumps(num), headers=headers )
 	contentDictList = json.loads( response.content )
@@ -83,6 +85,9 @@ def main():
 	gy_degree = raw_gy / 131.0
 	gz_degree = raw_gz / 131.0
 
+	findOffset = False
+	sumRaw = [ 0, 0, 0, 0, 0, 0 ]
+
 	for dataDict in sortedByIdDictList[1:]:
 
 		#	extract data
@@ -98,6 +103,16 @@ def main():
 #			 continue
 #		 if fabs( raw_ax ) > 150:
 #			 continue
+
+		if findOffset:
+			sumRaw = [
+				sumRaw[0] + raw_ax,
+				sumRaw[1] + raw_ay,
+				sumRaw[2] + raw_az,
+				sumRaw[3] + raw_gx,
+				sumRaw[4] + raw_gy,
+				sumRaw[5] + raw_gz,
+			]
 
 		ax_scaled = raw_ax / FSAccel
 		ay_scaled = raw_ay / FSAccel
@@ -122,11 +137,11 @@ def main():
 		print pitch_comp_filtered, roll_comp_filtered
 
 		# ------------------------------------------------------------------
-		gx_dps = raw_gx / 131.0 - 0.0597 # sensitivity drift
-		gy_dps = raw_gy / 131.0 - 0.032 # sensitivity drift
-		gz_dps = raw_gz / 131.0
+		gx_dps = raw_gx / 131.0 - 0.0009375 # sensitivity drift
+		gy_dps = raw_gy / 131.0 - 0.005625 # sensitivity drift
+		gz_dps = raw_gz / 131.0 - 0.00625
 
-		gx_degree = gx_degree + gx_dps * delta_t #+ 0.2   # zero drift
+		gx_degree = gx_degree + gx_dps * delta_t #+ 0.07   # zero drift
 		gy_degree = gy_degree + gy_dps * delta_t #+ 0.16   # zero drift
 		gz_degree = gz_degree + gz_dps * delta_t
 
@@ -177,6 +192,16 @@ def main():
 
 		x_value += delta_t
 		x.append( x_value )
+
+	if findOffset:
+		print 'OFFSET: {}, {}, {}, {}, {}, {}'.format(
+			sumRaw[0] / len( x ),
+			sumRaw[1] / len( x ),
+			sumRaw[2] / len( x ) - 16384.0,
+			sumRaw[3] / len( x ),
+			sumRaw[4] / len( x ),
+			sumRaw[5] / len( x ),
+		)
 
 	#	fft
 	Y = fft( y1 )
